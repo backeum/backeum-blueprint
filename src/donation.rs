@@ -49,7 +49,7 @@ mod donation {
                 )
                 .globalize();
 
-            return (component, admin_badge);
+            (component, admin_badge)
         }
 
         // donate is a public method, callable by anyone who want to donate to the user.

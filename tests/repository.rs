@@ -63,12 +63,10 @@ fn test_repository_create_donation_contract() {
                 lookup.bucket("donation_amount"),
             ),
         )
-        .call_method_with_name_lookup(
+        .call_method(
             repository_component,
             "mint",
-            |lookup| (
-                "id_test",
-            ),
+            manifest_args!("id_test"),
         )
         .deposit_batch(account3)
         .build();
@@ -77,5 +75,5 @@ fn test_repository_create_donation_contract() {
         manifest3,
         vec![NonFungibleGlobalId::from_public_key(&public_key3)],
     );
-    receipt3.expect_commit_success();
+    receipt3.expect_commit(true);
 }

@@ -22,7 +22,7 @@ fn generate_url(
     format!(
         "{}?donated={}&created={}&nft_id={}&user_identity={}",
         base_path,
-        donated.to_string(),
+        donated,
         created,
         nft_id,
         user_identity
@@ -124,7 +124,7 @@ mod repository {
                 .with_address(address_reservation)
                 .globalize();
 
-            return (component, owner_badge)
+            (component, owner_badge)
         }
 
         // new_donation_component sets up a new donation contract for a user, and give that contract
