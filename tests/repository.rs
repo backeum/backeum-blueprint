@@ -56,18 +56,10 @@ fn test_repository_create_donation_contract() {
     let manifest3 = ManifestBuilder::new()
         .withdraw_from_account(account3, RADIX_TOKEN, dec!(100))
         .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
-        .call_method_with_name_lookup(
-            donation_component,
-            "donate",
-            |lookup| (
-                lookup.bucket("donation_amount"),
-            ),
-        )
-        .call_method(
-            repository_component,
-            "mint",
-            manifest_args!("id_test"),
-        )
+        .call_method_with_name_lookup(donation_component, "donate", |lookup| {
+            (lookup.bucket("donation_amount"),)
+        })
+        .call_method(repository_component, "mint", manifest_args!("id_test"))
         .deposit_batch(account3)
         .build();
 

@@ -21,11 +21,7 @@ fn generate_url(
 ) -> String {
     format!(
         "{}?donated={}&created={}&nft_id={}&user_identity={}",
-        base_path,
-        donated,
-        created,
-        nft_id,
-        user_identity
+        base_path, donated, created, nft_id, user_identity
     )
 }
 
@@ -88,7 +84,8 @@ mod repository {
                         "name" => "Owner Badge", locked;
                         "description" => "Backeum trophies owner badge", locked;
                     }
-                )).mint_initial_supply(1);
+                ))
+                .mint_initial_supply(1);
 
             // Creating an admin badge for the admin role
             let trophy_minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::None)
@@ -114,15 +111,15 @@ mod repository {
                 trophy_minter_badge_manager,
                 base_path,
             }
-                .instantiate()
-                .prepare_to_globalize(OwnerRole::Fixed(
-                    rule!(require(owner_badge.resource_address()))
-                ))
-                .roles(roles!{
-                    trophy_minter => rule!(require(trophy_minter_badge_manager.address()));
-                })
-                .with_address(address_reservation)
-                .globalize();
+            .instantiate()
+            .prepare_to_globalize(OwnerRole::Fixed(rule!(require(
+                owner_badge.resource_address()
+            ))))
+            .roles(roles! {
+                trophy_minter => rule!(require(trophy_minter_badge_manager.address()));
+            })
+            .with_address(address_reservation)
+            .globalize();
 
             (component, owner_badge)
         }
@@ -139,7 +136,7 @@ mod repository {
         // Used when new members register an account component to mine and reward a unique NFT token.
         pub fn mint(&mut self, user_identity: String) -> Bucket {
             let created = generate_created_string();
-            let data = TrophyData{
+            let data = TrophyData {
                 user_identity: user_identity.clone(),
                 created: created.clone(),
                 donated: dec!(0),
@@ -148,7 +145,11 @@ mod repository {
 
             // Mint the new NFT, and update the key_image_url with the UUID that was assigned to the NFT.
             let trophy = self.trophy_resource_manager.mint_ruid_non_fungible(data);
-            let id = trophy.as_non_fungible().non_fungible::<TrophyData>().local_id().clone();
+            let id = trophy
+                .as_non_fungible()
+                .non_fungible::<TrophyData>()
+                .local_id()
+                .clone();
             self.trophy_resource_manager.update_non_fungible_data(
                 &id,
                 "key_image_url",

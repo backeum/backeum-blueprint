@@ -33,21 +33,20 @@ mod donation {
                         "name" => "Owner Badge", locked;
                         "description" => "Used to manage your Backeum donation contract", locked;
                     }
-                )).mint_initial_supply(1);
+                ))
+                .mint_initial_supply(1);
 
             let component = Self {
                 nft_minter_badge: Vault::with_bucket(minter_badge),
                 donations: Vault::new(RADIX_TOKEN),
                 user_identity,
             }
-                .instantiate()
-                .prepare_to_globalize(OwnerRole::None)
-                .roles(
-                    roles!(
-                        admin => rule!(require(admin_badge.resource_address()));
-                    )
-                )
-                .globalize();
+            .instantiate()
+            .prepare_to_globalize(OwnerRole::None)
+            .roles(roles!(
+                admin => rule!(require(admin_badge.resource_address()));
+            ))
+            .globalize();
 
             (component, admin_badge)
         }
@@ -55,7 +54,11 @@ mod donation {
         // donate is a public method, callable by anyone who want to donate to the user.
         pub fn donate(&mut self, tokens: Bucket) -> Proof {
             self.donations.put(tokens);
-            Proof::from(self.nft_minter_badge.as_fungible().create_proof_of_amount(1))
+            Proof::from(
+                self.nft_minter_badge
+                    .as_fungible()
+                    .create_proof_of_amount(1),
+            )
         }
     }
 }
