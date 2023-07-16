@@ -1,0 +1,8 @@
+# Set update schedule for cargo package manager
+
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
