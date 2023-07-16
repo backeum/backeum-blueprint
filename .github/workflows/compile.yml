@@ -3,7 +3,7 @@
 
 on: [push, pull_request]
 
-name: Cross-compile
+name: Compile
 
 jobs:
   build:
