@@ -54,9 +54,6 @@ mod repository {
         // Badge for being able to mint trophies.
         minter_badge_manager: ResourceManager,
 
-        // Badge for storing which NF the user has minted.
-        // donor_badge_manager: ResourceManager,
-
         // Promise tokens are minted by donation contract as proof XRD was donated.
         promise_token_manager: ResourceManager,
 
@@ -115,30 +112,6 @@ mod repository {
                     withdrawer_updater => rule!(deny_all);
                 })
                 .create_with_no_initial_supply();
-
-            // EXPERIMENTATION, DISREGARD
-            // Donor badge is used for Backeum to keep track of which NF user has minted, each donor
-            // should be given this badge the first time they donate, then it's used to keep track
-            // of which user has minted a trophy for a donation contract.
-            /*
-            let donor_badge_manager = ResourceBuilder::new_ruid_non_fungible::<DonorBadgeData>(OwnerRole::None)
-                .metadata(metadata!(
-                    init {
-                        "name" => "Donor badge", locked;
-                        "description" => "Donor badge is used for Backeum to keep track of which NF user has minted.", locked;
-                    }
-                ))
-                .mint_roles(mint_roles!(
-                    minter => rule!(require(minter_badge_manager.address()));
-                    minter_updater => rule!(deny_all);
-                ))
-                .withdraw_roles(withdraw_roles!{
-                    withdrawer => rule!(deny_all);
-                    withdrawer_updater => rule!(deny_all);
-                })
-                .create_with_no_initial_supply();
-
-             */
 
             // Define a "transient" resource which can never be deposited once created, only burned
             let promise_token_manager = ResourceBuilder::new_fungible(OwnerRole::None)

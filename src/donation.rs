@@ -15,9 +15,6 @@ mod donation {
         // Mints a proof that is used as proof of donated value to the NFT repository.
         promise_token_manager: ResourceManager,
 
-        // Donor badge manager is used to mint a badge for first time donor.
-        // donor_badge_manager: ResourceManager,
-
         // NFT minter badge
         nft_minter_badge: Vault,
 
@@ -29,7 +26,7 @@ mod donation {
         user_identity: String,
 
         // List of all the trophy ID's that have been donated through this contract.
-        non_fungible_id_list: Vec<NonFungibleLocalId>
+        minted_trophy_id_list: Vec<NonFungibleLocalId>
     }
 
     impl Donation {
@@ -50,7 +47,6 @@ mod donation {
                 donations: Vault::new(RADIX_TOKEN),
                 user_identity,
                 promise_token_manager,
-                // donor_badge_manager,
                 non_fungible_id_list: Vec::new(),
             }
             .instantiate()
@@ -66,20 +62,12 @@ mod donation {
         // donate is a public method, callable by anyone who want to donate to the user.
         pub fn donate(&mut self, tokens: Bucket, nf_proofs: Proof) -> (Proof, Bucket) {
             let checked_proof = nf_proofs.check(self.donor_badge_manager.address());
-            // TODO: Somehow loop through the non_fungible_id_list and figure out if the user has an
-            // NF already or not
-            let nfs_id = checked_proof.as_non_fungible().non_fungible_local_id();
-            println!("Donor proof: {:?}", donor_id);
+            let nf_list = checked_proof.as_non_fungible().non_fungible_local_ids();
+            println!("NF proof: {:?}", donor_id);
+            // Loop through NF LIST and check if any ID exists in the minted_trophy_id_list.
 
-            let promise_tokens = self.promise_token_manager.mint(tokens.amount());
-            self.donations.put(tokens);
-            let badge_proof = Proof::from(
-                self.nft_minter_badge
-                    .as_fungible()
-                    .create_proof_of_amount(1),
-            );
-
-            (badge_proof, promise_tokens)
+            // If ID found in the minted_trophy_id_list, then update metadata,
+            // Otherwise mint new NFT.
         }
     }
 }
