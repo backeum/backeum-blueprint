@@ -11,6 +11,9 @@ struct TrophyData {
     pub key_image_url: String,
 }
 
+#[derive(ScryptoSbor, NonFungibleData)]
+struct DonorBadgeData {}
+
 // function to generate the url for the image
 fn generate_url(
     base_path: String,
@@ -40,15 +43,22 @@ mod repository {
         methods {
             new_donation_component => PUBLIC;
             mint => restrict_to: [trophy_minter];
+            update => restrict_to: [trophy_minter];
         }
     }
 
     struct Repository {
-        // NFT resource address
+        // NFT resource address.
         trophy_resource_manager: ResourceManager,
 
-        // Badge for being able to mint trophies
-        trophy_minter_badge_manager: ResourceManager,
+        // Badge for being able to mint trophies.
+        minter_badge_manager: ResourceManager,
+
+        // Badge for storing which NF the user has minted.
+        donor_badge_manager: ResourceManager,
+
+        // Promise tokens are minted by donation contract as proof XRD was donated.
+        promise_token_manager: ResourceManager,
 
         // Base path, e.g https://backeum.com/nft_image
         base_path: String,
@@ -88,11 +98,11 @@ mod repository {
                 .mint_initial_supply(1);
 
             // Creating an admin badge for the admin role
-            let trophy_minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::None)
+            let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::None)
                 .divisibility(DIVISIBILITY_NONE)
                 .metadata(metadata!(
                     init {
-                        "name" => "Backeum Trophies Minter", locked;
+                        "name" => "Trophies Minter", locked;
                         "description" => "Grants authorization to mint NFTs from Backeum repository", locked;
                     }
                 ))
@@ -106,9 +116,52 @@ mod repository {
                 })
                 .create_with_no_initial_supply();
 
+            // Donor badge is used for Backeum to keep track of which NF user has minted, each donor
+            // should be given this badge the first time they donate, then it's used to keep track
+            // of which user has minted a trophy for a donation contract.
+            let donor_badge_manager = ResourceBuilder::new_ruid_non_fungible::<DonorBadgeData>(OwnerRole::None)
+                .metadata(metadata!(
+                    init {
+                        "name" => "Donor badge", locked;
+                        "description" => "Donor badge is used for Backeum to keep track of which NF user has minted.", locked;
+                    }
+                ))
+                .mint_roles(mint_roles!(
+                    minter => rule!(require(minter_badge_manager.address()));
+                    minter_updater => rule!(deny_all);
+                ))
+                .withdraw_roles(withdraw_roles!{
+                    withdrawer => rule!(deny_all);
+                    withdrawer_updater => rule!(deny_all);
+                })
+                .create_with_no_initial_supply();
+
+            // Define a "transient" resource which can never be deposited once created, only burned
+            let promise_token_manager = ResourceBuilder::new_fungible(OwnerRole::None)
+                .metadata(metadata!(
+                    init {
+                        "name" => "Transient Promise Token".to_owned(), locked;
+                    }
+                ))
+                .mint_roles(mint_roles!(
+                    minter => rule!(require(minter_badge_manager.address()));
+                    minter_updater => rule!(deny_all);
+                ))
+                .burn_roles(burn_roles!(
+                    burner => rule!(require(global_caller(component_address)));
+                    burner_updater => rule!(deny_all);
+                ))
+                .deposit_roles(deposit_roles!(
+                    depositor => rule!(deny_all);
+                    depositor_updater => rule!(deny_all);
+                ))
+                .create_with_no_initial_supply();
+
             let component = Self {
                 trophy_resource_manager,
-                trophy_minter_badge_manager,
+                minter_badge_manager,
+                donor_badge_manager,
+                promise_token_manager,
                 base_path,
             }
             .instantiate()
@@ -116,7 +169,7 @@ mod repository {
                 owner_badge.resource_address()
             ))))
             .roles(roles! {
-                trophy_minter => rule!(require(trophy_minter_badge_manager.address()));
+                trophy_minter => rule!(require(minter_badge_manager.address()));
             })
             .with_address(address_reservation)
             .globalize();
@@ -129,8 +182,8 @@ mod repository {
         // for instantiation we can ensure that the mint badge is only given to a contract that is
         // made by Backeum.
         pub fn new_donation_component(&mut self) -> (Global<Donation>, Bucket) {
-            let mint_badge = self.trophy_minter_badge_manager.mint(1);
-            Donation::new(mint_badge, "".to_string())
+            let mint_badge = self.minter_badge_manager.mint(1);
+            Donation::new(self.promise_token_manager, self.donor_badge_manager, mint_badge, "".to_string())
         }
 
         // Used when new members register an account component to mine and reward a unique NFT token.
@@ -143,7 +196,8 @@ mod repository {
                 key_image_url: "".to_string(),
             };
 
-            // Mint the new NFT, and update the key_image_url with the UUID that was assigned to the NFT.
+            // Mint the new NF, and update the key_image_url with the UUID that was assigned to the
+            // NF.
             let trophy = self.trophy_resource_manager.mint_ruid_non_fungible(data);
             let id = trophy
                 .as_non_fungible()
@@ -163,6 +217,23 @@ mod repository {
             );
 
             trophy
+        }
+
+        // Update the NF token of a member with the new amount donated.
+        pub fn update(&mut self, id: NonFungibleLocalId, amount: Decimal) {
+            let mut data: TrophyData = self.trophy_resource_manager.get_non_fungible_data(&id);
+
+            data.donated += amount;
+            data.key_image_url = generate_url(
+                self.base_path.clone(),
+                data.donated,
+                data.created,
+                id.to_string(),
+                data.user_identity,
+            );
+
+            self.trophy_resource_manager.update_non_fungible_data(&id, "donated", data.donated);
+            self.trophy_resource_manager.update_non_fungible_data(&id, "key_image_url", data.key_image_url);
         }
     }
 }
