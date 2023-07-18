@@ -55,7 +55,7 @@ mod repository {
         minter_badge_manager: ResourceManager,
 
         // Badge for storing which NF the user has minted.
-        donor_badge_manager: ResourceManager,
+        // donor_badge_manager: ResourceManager,
 
         // Promise tokens are minted by donation contract as proof XRD was donated.
         promise_token_manager: ResourceManager,
@@ -116,9 +116,11 @@ mod repository {
                 })
                 .create_with_no_initial_supply();
 
+            // EXPERIMENTATION, DISREGARD
             // Donor badge is used for Backeum to keep track of which NF user has minted, each donor
             // should be given this badge the first time they donate, then it's used to keep track
             // of which user has minted a trophy for a donation contract.
+            /*
             let donor_badge_manager = ResourceBuilder::new_ruid_non_fungible::<DonorBadgeData>(OwnerRole::None)
                 .metadata(metadata!(
                     init {
@@ -135,6 +137,8 @@ mod repository {
                     withdrawer_updater => rule!(deny_all);
                 })
                 .create_with_no_initial_supply();
+
+             */
 
             // Define a "transient" resource which can never be deposited once created, only burned
             let promise_token_manager = ResourceBuilder::new_fungible(OwnerRole::None)
@@ -160,7 +164,7 @@ mod repository {
             let component = Self {
                 trophy_resource_manager,
                 minter_badge_manager,
-                donor_badge_manager,
+                // donor_badge_manager,
                 promise_token_manager,
                 base_path,
             }
@@ -183,7 +187,7 @@ mod repository {
         // made by Backeum.
         pub fn new_donation_component(&mut self) -> (Global<Donation>, Bucket) {
             let mint_badge = self.minter_badge_manager.mint(1);
-            Donation::new(self.promise_token_manager, self.donor_badge_manager, mint_badge, "".to_string())
+            Donation::new(self.promise_token_manager,  mint_badge, "".to_string())
         }
 
         // Used when new members register an account component to mine and reward a unique NFT token.
