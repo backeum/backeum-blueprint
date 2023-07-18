@@ -16,7 +16,7 @@ mod donation {
         promise_token_manager: ResourceManager,
 
         // Donor badge manager is used to mint a badge for first time donor.
-        donor_badge_manager: ResourceManager,
+        // donor_badge_manager: ResourceManager,
 
         // NFT minter badge
         nft_minter_badge: Vault,
@@ -33,7 +33,7 @@ mod donation {
     }
 
     impl Donation {
-        pub fn new(promise_token_manager: ResourceManager, donor_badge_manager: ResourceManager, minter_badge: Bucket, user_identity: String) -> (Global<Donation>, Bucket) {
+        pub fn new(promise_token_manager: ResourceManager, minter_badge: Bucket, user_identity: String) -> (Global<Donation>, Bucket) {
             // Creating an admin badge for the admin role, return it to the component creator.
             let admin_badge = ResourceBuilder::new_fungible(OwnerRole::None)
                 .divisibility(DIVISIBILITY_NONE)
@@ -50,7 +50,7 @@ mod donation {
                 donations: Vault::new(RADIX_TOKEN),
                 user_identity,
                 promise_token_manager,
-                donor_badge_manager,
+                // donor_badge_manager,
                 non_fungible_id_list: Vec::new(),
             }
             .instantiate()
@@ -64,9 +64,11 @@ mod donation {
         }
 
         // donate is a public method, callable by anyone who want to donate to the user.
-        pub fn donate(&mut self, tokens: Bucket, donor_proof: Proof) -> (Proof, Bucket) {
-            let checked_proof = donor_proof.check(self.donor_badge_manager.address());
-            let donor_id = checked_proof.as_non_fungible().non_fungible_local_id();
+        pub fn donate(&mut self, tokens: Bucket, nf_proofs: Proof) -> (Proof, Bucket) {
+            let checked_proof = nf_proofs.check(self.donor_badge_manager.address());
+            // TODO: Somehow loop through the non_fungible_id_list and figure out if the user has an
+            // NF already or not
+            let nfs_id = checked_proof.as_non_fungible().non_fungible_local_id();
             println!("Donor proof: {:?}", donor_id);
 
             let promise_tokens = self.promise_token_manager.mint(tokens.amount());
