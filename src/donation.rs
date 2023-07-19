@@ -1,4 +1,25 @@
+use crate::repository::TrophyData;
 use scrypto::prelude::*;
+
+// function to generate the url for the image
+fn generate_url(
+    base_path: String,
+    donated: Decimal,
+    created: String,
+    nft_id: String,
+    user_identity: String,
+) -> String {
+    format!(
+        "{}?donated={}&created={}&nft_id={}&user_identity={}",
+        base_path, donated, created, nft_id, user_identity
+    )
+}
+
+// function to generate the created string with a date format
+fn generate_created_string() -> String {
+    let time = UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap();
+    format!("{}-{}-{}", time.year(), time.month(), time.day_of_month())
+}
 
 #[blueprint]
 mod donation {
@@ -7,16 +28,17 @@ mod donation {
             admin => updatable_by: [];
         },
         methods {
-            donate => PUBLIC;
+            donate_mint => PUBLIC;
+            donate_update => PUBLIC;
         }
     }
 
     struct Donation {
         // Mints a proof that is used as proof of donated value to the NFT repository.
-        promise_token_manager: ResourceManager,
+        trophy_resource_manager: ResourceManager,
 
         // NFT minter badge
-        nft_minter_badge: Vault,
+        minter_badge: Vault,
 
         // Collected donations
         // TODO: Enable what tokens to accept as donations.
@@ -24,13 +46,14 @@ mod donation {
 
         // Specific user identity that owns this component
         user_identity: String,
-
-        // List of all the trophy ID's that have been donated through this contract.
-        minted_trophy_id_list: Vec<NonFungibleLocalId>
     }
 
     impl Donation {
-        pub fn new(promise_token_manager: ResourceManager, minter_badge: Bucket, user_identity: String) -> (Global<Donation>, Bucket) {
+        pub fn new(
+            trophy_resource_manager: ResourceManager,
+            minter_badge: Bucket,
+            user_identity: String,
+        ) -> (Global<Donation>, Bucket) {
             // Creating an admin badge for the admin role, return it to the component creator.
             let admin_badge = ResourceBuilder::new_fungible(OwnerRole::None)
                 .divisibility(DIVISIBILITY_NONE)
@@ -43,11 +66,10 @@ mod donation {
                 .mint_initial_supply(1);
 
             let component = Self {
-                nft_minter_badge: Vault::with_bucket(minter_badge),
+                minter_badge: Vault::with_bucket(minter_badge),
                 donations: Vault::new(RADIX_TOKEN),
                 user_identity,
-                promise_token_manager,
-                non_fungible_id_list: Vec::new(),
+                trophy_resource_manager,
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::None)
@@ -60,14 +82,87 @@ mod donation {
         }
 
         // donate is a public method, callable by anyone who want to donate to the user.
-        pub fn donate(&mut self, tokens: Bucket, nf_proofs: Proof) -> (Proof, Bucket) {
-            let checked_proof = nf_proofs.check(self.donor_badge_manager.address());
-            let nf_list = checked_proof.as_non_fungible().non_fungible_local_ids();
-            println!("NF proof: {:?}", donor_id);
-            // Loop through NF LIST and check if any ID exists in the minted_trophy_id_list.
+        pub fn donate_mint(&mut self, tokens: Bucket) -> Bucket {
+            let created = generate_created_string();
+            let mut data = TrophyData {
+                user_identity: self.user_identity.clone(),
+                created: created.clone(),
+                donated: dec!(0),
+                key_image_url: "".to_string(),
+            };
 
-            // If ID found in the minted_trophy_id_list, then update metadata,
-            // Otherwise mint new NFT.
+            let trophy = self
+                .trophy_resource_manager
+                .mint_ruid_non_fungible(data.clone());
+
+            let nft_id = trophy
+                .as_non_fungible()
+                .non_fungible::<TrophyData>()
+                .local_id()
+                .clone();
+
+            // Generate new data based on the updated donation value.
+            data.donated += tokens.amount();
+            data.key_image_url = generate_url(
+                "https://backeum.com/nf_image_generation".to_string(),
+                data.donated,
+                data.created,
+                nft_id.to_string(),
+                data.user_identity,
+            );
+
+            // Update NF with new data
+            self.trophy_resource_manager
+                .update_non_fungible_data(&nft_id, "donated", data.donated);
+            self.trophy_resource_manager.update_non_fungible_data(
+                &nft_id,
+                "key_image_url",
+                data.key_image_url,
+            );
+
+            // Take all tokens, and return trophy.
+            self.donations.put(tokens);
+            trophy
+        }
+
+        // donate is a public method, callable by anyone who want to donate to the user.
+        pub fn donate_update(&mut self, tokens: Bucket, proof: Proof) {
+            // Check that the proof is of same resource address.
+            let checked_proof = proof.check(self.trophy_resource_manager.address());
+
+            // Retrieve the NF id from the proof, use it to update metadata on the NF.
+            let nft_id = checked_proof.as_non_fungible().non_fungible_local_id();
+
+            // Get data from the Trophy data based on NF id.
+            let mut data: TrophyData = self.trophy_resource_manager.get_non_fungible_data(&nft_id);
+
+            // Check whether the NF user_identity is owned by this component.
+            assert_eq!(
+                data.user_identity, self.user_identity,
+                "User identity does not match the NF"
+            );
+
+            // Generate new data based on the updated donation value.
+            data.donated += tokens.amount();
+            data.key_image_url = generate_url(
+                "https://backeum.com/nf_image_generation".to_string(),
+                data.donated,
+                data.created,
+                nft_id.to_string(),
+                data.user_identity,
+            );
+
+            // Update NF with new data
+            self.trophy_resource_manager
+                .update_non_fungible_data(&nft_id, "donated", data.donated);
+            self.trophy_resource_manager.update_non_fungible_data(
+                &nft_id,
+                "key_image_url",
+                data.key_image_url,
+            );
+
+            // Take all tokens, and return trophy.
+            self.donations.put(tokens);
         }
     }
 }

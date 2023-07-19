@@ -59,14 +59,11 @@ fn test_repository_create_donation_contract() {
     let (public_key3, _, account3) = test_runner.new_allocated_account();
 
     let manifest3 = ManifestBuilder::new()
-        .create_proof_from_account_of_non_fungibles(account3, donor_badge_address, &btreeset!())
-        .pop_from_auth_zone("donor_badge")
         .withdraw_from_account(account3, RADIX_TOKEN, dec!(100))
         .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
-        .call_method_with_name_lookup(donation_component, "donate", |lookup| {
-            (lookup.bucket("donation_amount"), lookup.proof("donor_badge"))
+        .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+            (lookup.bucket("donation_amount"),)
         })
-        .call_method(repository_component, "mint", manifest_args!("id_test"))
         .deposit_batch(account3)
         .build();
 
