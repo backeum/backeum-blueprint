@@ -5,7 +5,7 @@ use transaction::builder::ManifestBuilder;
 #[test]
 fn test_repository_create_donation_contract() {
     // Setup the environment
-    let mut test_runner = TestRunner::builder().build();
+    let mut test_runner = TestRunner::builder().without_trace().build();
 
     // Create an owner account
     let (public_key, _private_key, account) = test_runner.new_allocated_account();
@@ -30,6 +30,11 @@ fn test_repository_create_donation_contract() {
     );
 
     let repository_component = receipt.expect_commit(true).new_component_addresses()[0];
+    let donor_badge_address = receipt.expect_commit(true).new_resource_addresses()[0];
+    let resources = test_runner.get_component_resources(repository_component);
+
+    println!("resources: {:?}", resources);
+    println!("donor_badge_address: {:?}", donor_badge_address);
 
     // Create an owner account
     let (public_key2, _, account2) = test_runner.new_allocated_account();
@@ -56,10 +61,9 @@ fn test_repository_create_donation_contract() {
     let manifest3 = ManifestBuilder::new()
         .withdraw_from_account(account3, RADIX_TOKEN, dec!(100))
         .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
-        .call_method_with_name_lookup(donation_component, "donate", |lookup| {
+        .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
             (lookup.bucket("donation_amount"),)
         })
-        .call_method(repository_component, "mint", manifest_args!("id_test"))
         .deposit_batch(account3)
         .build();
 
