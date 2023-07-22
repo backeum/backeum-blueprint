@@ -36,7 +36,7 @@ mod tests {
 
     impl TestSetup {
         fn new() -> Self {
-            let mut test_runner = TestRunner::builder().without_trace().build();
+            let mut test_runner = TestRunner::builder().build();
 
             // Create an owner account
             let owner_account = TestAccount::new(&mut test_runner);
@@ -44,32 +44,56 @@ mod tests {
             // Publish package
             let package_address = test_runner.compile_and_publish(this_package!());
 
-            // Test the repository component via the new function.
-            let manifest = ManifestBuilder::new()
-                .call_function(
-                    package_address,
-                    "Repository",
-                    "new",
-                    manifest_args!("https://localhost:8080/nft_image"),
+            // Create an owner badge used for repository component.
+            let manifest1 = ManifestBuilder::new()
+                .new_badge_fixed(
+                    OwnerRole::None,
+                    Default::default(),
+                    dec!(1)
                 )
                 .deposit_batch(owner_account.wallet_address)
                 .build();
 
             // Execute the manifest.
-            let receipt = test_runner.execute_manifest_ignoring_fee(
-                manifest,
+            let receipt1 = test_runner.execute_manifest_ignoring_fee(
+                manifest1,
                 vec![NonFungibleGlobalId::from_public_key(
                     &owner_account.public_key,
                 )],
             );
 
-            // Get the repository component address.
-            let repository_component = receipt.expect_commit(true).new_component_addresses()[0];
+            let result1 = receipt1.expect_commit(true);
 
-            // Get the owner badge resource address.
-            let owner_badge_resource_address =
-                receipt.expect_commit(true).new_resource_addresses()[0];
-            let trophy_resource_address = receipt.expect_commit(true).new_resource_addresses()[2];
+            // Get the repository component address.
+            let owner_badge_resource_address = result1.new_resource_addresses()[0];
+
+            // Test the repository component via the new function.
+            let manifest2 = ManifestBuilder::new()
+                .call_function(
+                    package_address,
+                    "Repository",
+                    "new",
+                    manifest_args!("https://localhost:8080/nft_image", owner_badge_resource_address),
+                )
+                .try_deposit_batch_or_abort(owner_account.wallet_address)
+                .build();
+
+            // Execute the manifest.
+            let receipt2 = test_runner.execute_manifest_ignoring_fee(
+                manifest2,
+                vec![NonFungibleGlobalId::from_public_key(
+                    &owner_account.public_key,
+                )],
+            );
+
+            let result2 = receipt2.expect_commit(true);
+
+            // Get the repository component address.
+            let repository_component = result2.new_component_addresses()[0];
+
+            // Get the trophy resource address.
+            let trophy_resource_address = result2.new_resource_addresses()[1];
+
             Self {
                 test_runner,
                 package_address,
@@ -203,7 +227,6 @@ mod tests {
                 &admin_account.public_key,
             )],
         );
-
         receipt4.expect_commit_failure();
 
         // Test rejection to update the base path with a non owner account

@@ -16,12 +16,11 @@ pub(crate) struct TrophyData {
 mod repository {
     enable_method_auth! {
         roles {
-            admin => updatable_by: [OWNER];
             trophy_minter => updatable_by: [OWNER];
         },
         methods {
             new_donation_component => PUBLIC;
-            update_base_path => restrict_to: [admin];
+            update_base_path => restrict_to: [OWNER];
         }
     }
 
@@ -29,31 +28,20 @@ mod repository {
         // NFT resource address.
         trophy_resource_manager: ResourceManager,
 
-        // Owner badge is given to the owner of the component.
-        owner_badge_manager: ResourceManager,
-
         // Badge for being able to mint trophies.
         minter_badge_manager: ResourceManager,
     }
 
     impl Repository {
-        pub fn new(base_path: String) -> (Global<Repository>, Bucket) {
+        pub fn new(base_path: String, owner_badge: ResourceAddress) -> Global<Repository> {
             let (address_reservation, component_address) =
                 Runtime::allocate_component_address(Runtime::blueprint_id());
 
-            // Creating an admin badge for the admin role
-            let owner_badge = ResourceBuilder::new_fungible(OwnerRole::None)
-                .divisibility(DIVISIBILITY_NONE)
-                .metadata(metadata!(
-                    init {
-                        "name" => "Owner Badge", locked;
-                        "description" => "Repository owner badge", locked;
-                    }
-                ))
-                .mint_initial_supply(1);
+            // Setup owner badge access rule
+            let owner_badge_access_rule: AccessRule = rule!(require(owner_badge));
 
             // Creating an admin badge for the admin role
-            let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::None)
+            let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(owner_badge_access_rule.clone()))
                 .divisibility(DIVISIBILITY_NONE)
                 .metadata(metadata!(
                     init {
@@ -71,13 +59,14 @@ mod repository {
                 })
                 .create_with_no_initial_supply();
 
-            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::None)
+
+            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::Fixed(owner_badge_access_rule.clone()))
                 .metadata(metadata!(
                     roles {
-                        metadata_setter => rule!(require(owner_badge.resource_address()));
-                        metadata_setter_updater => rule!(deny_all);
-                        metadata_locker => rule!(deny_all);
-                        metadata_locker_updater => rule!(deny_all);
+                        metadata_setter => owner_badge_access_rule.clone();
+                        metadata_setter_updater => owner_badge_access_rule.clone();
+                        metadata_locker => owner_badge_access_rule.clone();
+                        metadata_locker_updater => owner_badge_access_rule.clone();
                     },
                     init {
                         "name" => "Backeum Trophies", locked;
@@ -87,35 +76,31 @@ mod repository {
                 ))
                 .withdraw_roles(withdraw_roles!(
                     withdrawer => rule!(require(minter_badge_manager.address()));
-                    withdrawer_updater => rule!(deny_all);
+                    withdrawer_updater => owner_badge_access_rule.clone();
                 ))
                 .mint_roles(mint_roles!(
                     minter => rule!(require(minter_badge_manager.address()));
-                    minter_updater => rule!(deny_all);
+                    minter_updater => owner_badge_access_rule.clone();
                 ))
                 .non_fungible_data_update_roles(non_fungible_data_update_roles!(
-                    non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(owner_badge.resource_address()));
-                    non_fungible_data_updater_updater => rule!(deny_all);
+                    non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(owner_badge));
+                    non_fungible_data_updater_updater => owner_badge_access_rule.clone();
                 ))
                 .create_with_no_initial_supply();
 
             let component = Self {
                 trophy_resource_manager,
-                owner_badge_manager: owner_badge.resource_manager(),
                 minter_badge_manager,
             }
             .instantiate()
-            .prepare_to_globalize(OwnerRole::Fixed(rule!(require(
-                owner_badge.resource_address()
-            ))))
+            .prepare_to_globalize(OwnerRole::Fixed(owner_badge_access_rule.clone()))
             .roles(roles! {
                 trophy_minter => rule!(require(minter_badge_manager.address()));
-                admin => rule!(require(owner_badge.resource_address()));
             })
             .with_address(address_reservation)
             .globalize();
 
-            (component, owner_badge)
+            component
         }
 
         // new_donation_component sets up a new donation component for a user, and give that contract
