@@ -46,11 +46,7 @@ mod tests {
 
             // Create an owner badge used for repository component.
             let manifest1 = ManifestBuilder::new()
-                .new_badge_fixed(
-                    OwnerRole::None,
-                    Default::default(),
-                    dec!(1)
-                )
+                .new_badge_fixed(OwnerRole::None, Default::default(), dec!(1))
                 .deposit_batch(owner_account.wallet_address)
                 .build();
 
@@ -73,7 +69,10 @@ mod tests {
                     package_address,
                     "Repository",
                     "new",
-                    manifest_args!("https://localhost:8080/nft_image", owner_badge_resource_address),
+                    manifest_args!(
+                        "https://localhost:8080/nft_image",
+                        owner_badge_resource_address
+                    ),
                 )
                 .try_deposit_batch_or_abort(owner_account.wallet_address)
                 .build();

@@ -38,27 +38,28 @@ mod repository {
                 Runtime::allocate_component_address(Runtime::blueprint_id());
 
             // Setup owner badge access rule
-            let owner_badge_access_rule: AccessRule = rule!(require(owner_badge));
+            let owner_badge_access_rule: AccessRule = rule!(require(owner_badge.clone()));
 
             // Creating an admin badge for the admin role
-            let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(owner_badge_access_rule.clone()))
-                .divisibility(DIVISIBILITY_NONE)
-                .metadata(metadata!(
-                    init {
-                        "name" => "Trophies Minter", locked;
-                        "description" => "Grants authorization to mint NFs from repository", locked;
-                    }
-                ))
-                .mint_roles(mint_roles! {
-                    minter => rule!(require(global_caller(component_address)));
-                    minter_updater => rule!(deny_all);
-                })
-                .withdraw_roles(withdraw_roles! {
-                    withdrawer => rule!(deny_all);
-                    withdrawer_updater => rule!(deny_all);
-                })
-                .create_with_no_initial_supply();
-
+            let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(
+                owner_badge_access_rule.clone(),
+            ))
+            .divisibility(DIVISIBILITY_NONE)
+            .metadata(metadata!(
+                init {
+                    "name" => "Trophies Minter", locked;
+                    "description" => "Grants authorization to mint NFs from repository", locked;
+                }
+            ))
+            .mint_roles(mint_roles! {
+                minter => rule!(require(global_caller(component_address)));
+                minter_updater => rule!(deny_all);
+            })
+            .withdraw_roles(withdraw_roles! {
+                withdrawer => rule!(deny_all);
+                withdrawer_updater => rule!(deny_all);
+            })
+            .create_with_no_initial_supply();
 
             let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::Fixed(owner_badge_access_rule.clone()))
                 .metadata(metadata!(
@@ -83,7 +84,7 @@ mod repository {
                     minter_updater => owner_badge_access_rule.clone();
                 ))
                 .non_fungible_data_update_roles(non_fungible_data_update_roles!(
-                    non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(owner_badge));
+                    non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(owner_badge.clone()));
                     non_fungible_data_updater_updater => owner_badge_access_rule.clone();
                 ))
                 .create_with_no_initial_supply();
