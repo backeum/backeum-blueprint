@@ -38,7 +38,7 @@ mod repository {
                 Runtime::allocate_component_address(Runtime::blueprint_id());
 
             // Setup owner badge access rule
-            let owner_badge_access_rule: AccessRule = rule!(require(owner_badge.clone()));
+            let owner_badge_access_rule: AccessRule = rule!(require(owner_badge));
 
             // Creating an admin badge for the admin role
             let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(
@@ -89,7 +89,7 @@ mod repository {
                 ))
                 .create_with_no_initial_supply();
 
-            let component = Self {
+            Self {
                 trophy_resource_manager,
                 minter_badge_manager,
             }
@@ -99,9 +99,7 @@ mod repository {
                 trophy_minter => rule!(require(minter_badge_manager.address()));
             })
             .with_address(address_reservation)
-            .globalize();
-
-            component
+            .globalize()
         }
 
         // new_donation_component sets up a new donation component for a user, and give that contract
