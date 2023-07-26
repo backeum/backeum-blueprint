@@ -64,10 +64,10 @@ mod repository {
             let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::Fixed(owner_badge_access_rule.clone()))
                 .metadata(metadata!(
                     roles {
-                        metadata_setter => owner_badge_access_rule.clone();
-                        metadata_setter_updater => owner_badge_access_rule.clone();
-                        metadata_locker => owner_badge_access_rule.clone();
-                        metadata_locker_updater => owner_badge_access_rule.clone();
+                        metadata_setter => rule!(require(global_caller(component_address)));
+                        metadata_setter_updater => rule!(deny_all);
+                        metadata_locker => rule!(deny_all);
+                        metadata_locker_updater => rule!(deny_all);
                     },
                     init {
                         "name" => "Backeum Trophies", locked;
@@ -76,15 +76,15 @@ mod repository {
                     }
                 ))
                 .withdraw_roles(withdraw_roles!(
-                    withdrawer => rule!(require(minter_badge_manager.address()));
-                    withdrawer_updater => owner_badge_access_rule.clone();
+                    withdrawer => rule!(deny_all);
+                    withdrawer_updater => rule!(require(global_caller(component_address)));
                 ))
                 .mint_roles(mint_roles!(
                     minter => rule!(require(minter_badge_manager.address()));
-                    minter_updater => owner_badge_access_rule.clone();
+                    minter_updater => rule!(require(global_caller(component_address)));
                 ))
                 .non_fungible_data_update_roles(non_fungible_data_update_roles!(
-                    non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(owner_badge.clone()));
+                    non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
                     non_fungible_data_updater_updater => owner_badge_access_rule.clone();
                 ))
                 .create_with_no_initial_supply();
