@@ -2,7 +2,7 @@ use crate::repository::TrophyData;
 use scrypto::prelude::*;
 
 // function to generate the url for the image
-fn generate_url(
+pub(crate) fn generate_url(
     base_path: String,
     donated: Decimal,
     created: String,
@@ -83,6 +83,8 @@ mod donation {
 
         // donate is a public method, callable by anyone who want to donate to the user.
         pub fn donate_mint(&mut self, tokens: Bucket) -> Bucket {
+            LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
+            let domain: String = self.trophy_resource_manager.get_metadata("domain").unwrap();
             let created = generate_created_string();
             let mut data = TrophyData {
                 user_identity: self.user_identity.clone(),
@@ -104,7 +106,7 @@ mod donation {
             // Generate new data based on the updated donation value.
             data.donated += tokens.amount();
             data.key_image_url = generate_url(
-                "https://backeum.com/nf_image_generation".to_string(),
+                domain.to_string(),
                 data.donated,
                 data.created,
                 nft_id.to_string(),
@@ -127,6 +129,9 @@ mod donation {
 
         // donate is a public method, callable by anyone who want to donate to the user.
         pub fn donate_update(&mut self, tokens: Bucket, proof: Proof) {
+            LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
+            let domain: String = self.trophy_resource_manager.get_metadata("domain").unwrap();
+
             // Check that the proof is of same resource address.
             let checked_proof = proof.check(self.trophy_resource_manager.address());
 
@@ -145,7 +150,7 @@ mod donation {
             // Generate new data based on the updated donation value.
             data.donated += tokens.amount();
             data.key_image_url = generate_url(
-                "https://backeum.com/nf_image_generation".to_string(),
+                domain.to_string(),
                 data.donated,
                 data.created,
                 nft_id.to_string(),
