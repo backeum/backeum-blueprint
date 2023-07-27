@@ -36,7 +36,7 @@ mod tests {
 
     impl TestSetup {
         fn new() -> Self {
-            let mut test_runner = TestRunner::builder().build();
+            let mut test_runner = TestRunner::builder().without_trace().build();
 
             // Create an owner account
             let owner_account = TestAccount::new(&mut test_runner);
@@ -105,7 +105,7 @@ mod tests {
     }
 
     #[test]
-    fn repository_test() {
+    fn repository_new() {
         TestSetup::new();
     }
 
@@ -248,6 +248,190 @@ mod tests {
                 &base.owner_account.public_key,
             )],
         );
-        receipt5.expect_commit_success();
+        let result = receipt5.expect_commit(true);
+        let vaults = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+
+        // TODO: Check metadata is correct on NFT.
+    }
+
+    #[test]
+    fn repository_donate_mint_update() {
+        let mut base = TestSetup::new();
+
+        // Create an component admin account
+        let admin_account = TestAccount::new(&mut base.test_runner);
+        // Create donation account
+        let donation_account = TestAccount::new(&mut base.test_runner);
+        let donation_account_wrong_nft = TestAccount::new(&mut base.test_runner);
+
+        // Create a donation component
+        let manifest = ManifestBuilder::new()
+            .call_method(
+                base.repository_component,
+                "new_donation_component",
+                manifest_args!(),
+            )
+            .deposit_batch(admin_account.wallet_address)
+            .build();
+
+        // Execute it
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &admin_account.public_key,
+            )],
+        );
+
+        // Get the resource address
+        let donation_component = receipt.expect_commit(true).new_component_addresses()[0];
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
+            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, "trophy")
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+        assert_eq!(
+            base.test_runner.account_balance(
+                donation_account.wallet_address,
+                base.trophy_resource_address
+            ),
+            Some(dec!(1))
+        );
+        assert_eq!(
+            base.test_runner
+                .account_balance(donation_account.wallet_address, RADIX_TOKEN),
+            Some(dec!(9900))
+        );
+
+        // Get the Non fungible id out of the stack
+        let trophy_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+        let vault_content = base
+            .test_runner
+            .inspect_non_fungible_vault(trophy_vault[0])
+            .unwrap();
+        assert_eq!(vault_content.0, dec!(1));
+        let trophy_id = vault_content.1.unwrap();
+
+        // Donate and update trophy
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungibles(
+                donation_account.wallet_address,
+                base.trophy_resource_address,
+                &btreeset!(trophy_id.clone()),
+            )
+            .pop_from_auth_zone("trophy")
+            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
+            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+                (lookup.bucket("donation_amount"), lookup.proof("trophy"))
+            })
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+        // TODO: Check metadata is correct on NF when it comes to amount donated.
+
+        // Donate and update trophy with the wrong account, should fail, admin_account does not have
+        // the NFT in account.
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungibles(
+                admin_account.wallet_address,
+                base.trophy_resource_address,
+                &btreeset!(trophy_id.clone()),
+            )
+            .pop_from_auth_zone("trophy")
+            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
+            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+                (lookup.bucket("donation_amount"), lookup.proof("trophy"))
+            })
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Donate and mint trophy with new account, and attempt fake update wrong NF id.
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(
+                donation_account_wrong_nft.wallet_address,
+                RADIX_TOKEN,
+                dec!(100),
+            )
+            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophy")
+            .try_deposit_or_abort(donation_account_wrong_nft.wallet_address, "trophy")
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account_wrong_nft.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+
+        // Donate and update trophy
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungibles(
+                donation_account_wrong_nft.wallet_address,
+                base.trophy_resource_address,
+                &btreeset!(trophy_id.clone()),
+            )
+            .pop_from_auth_zone("trophy")
+            .withdraw_from_account(
+                donation_account_wrong_nft.wallet_address,
+                RADIX_TOKEN,
+                dec!(100),
+            )
+            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+                (lookup.bucket("donation_amount"), lookup.proof("trophy"))
+            })
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account_wrong_nft.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
     }
 }
