@@ -27,7 +27,6 @@ mod tests {
 
     struct TestSetup {
         test_runner: TestRunner,
-        package_address: PackageAddress,
         repository_component: ComponentAddress,
         owner_account: TestAccount,
         owner_badge_resource_address: ResourceAddress,
@@ -95,7 +94,6 @@ mod tests {
 
             Self {
                 test_runner,
-                package_address,
                 repository_component,
                 owner_account,
                 owner_badge_resource_address,
@@ -248,12 +246,7 @@ mod tests {
                 &base.owner_account.public_key,
             )],
         );
-        let result = receipt5.expect_commit(true);
-        let vaults = base.test_runner.get_component_vaults(
-            donation_account.wallet_address,
-            base.trophy_resource_address,
-        );
-
+        receipt5.expect_commit_success();
         // TODO: Check metadata is correct on NFT.
     }
 
