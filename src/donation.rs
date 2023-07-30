@@ -30,6 +30,7 @@ mod donation {
         methods {
             donate_mint => PUBLIC;
             donate_update => PUBLIC;
+            withdraw_donations => restrict_to: [admin];
         }
     }
 
@@ -59,7 +60,7 @@ mod donation {
                 .divisibility(DIVISIBILITY_NONE)
                 .metadata(metadata!(
                     init {
-                        "name" => "Owner Badge", locked;
+                        "name" => "Admin Badge", locked;
                         "description" => "Used to manage your Backeum donation contract", locked;
                     }
                 ))
@@ -168,6 +169,11 @@ mod donation {
 
             // Take all tokens, and return trophy.
             self.donations.put(tokens);
+        }
+
+        // withdraw_donations is a method for the admin to withdraw all donations.
+        pub fn withdraw_donations(&mut self) -> Bucket {
+            self.donations.take_all()
         }
     }
 }

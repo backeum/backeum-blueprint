@@ -434,4 +434,145 @@ mod tests {
 
         receipt.expect_commit_failure();
     }
+
+    #[test]
+    fn donation_withdraw_donations() {
+        let mut base = TestSetup::new();
+
+        // Create an component admin account
+        let admin_account = TestAccount::new(&mut base.test_runner);
+        // Create donation account
+        let no_access_account = TestAccount::new(&mut base.test_runner);
+
+        // Create a donation component
+        let manifest = ManifestBuilder::new()
+            .call_method(
+                base.repository_component,
+                "new_donation_component",
+                manifest_args!(),
+            )
+            .deposit_batch(admin_account.wallet_address)
+            .build();
+
+        // Execute it
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &admin_account.public_key,
+            )],
+        );
+
+        // Get the resource address
+        let result = receipt.expect_commit(true);
+        let donation_component = result.new_component_addresses()[0];
+        let admin_badge_resource = result.new_resource_addresses()[0];
+
+        // Donate and mint trophy with the no access account
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(no_access_account.wallet_address, RADIX_TOKEN, dec!(100))
+            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophy")
+            .try_deposit_or_abort(no_access_account.wallet_address, "trophy")
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &no_access_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+        assert_eq!(
+            base.test_runner.account_balance(
+                no_access_account.wallet_address,
+                base.trophy_resource_address
+            ),
+            Some(dec!(1))
+        );
+        assert_eq!(
+            base.test_runner
+                .account_balance(no_access_account.wallet_address, RADIX_TOKEN),
+            Some(dec!(9900))
+        );
+        let rdx_vaults = base
+            .test_runner
+            .get_component_vaults(donation_component, RADIX_TOKEN)[1];
+        assert_eq!(
+            base.test_runner.inspect_vault_balance(rdx_vaults),
+            Some(dec!(100))
+        );
+
+        // Attempt to withdraw donations with the no access account by creating proof of admin badge
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_amount(
+                no_access_account.wallet_address,
+                admin_badge_resource,
+                dec!(1),
+            )
+            .call_method(donation_component, "withdraw_donations", manifest_args!())
+            .deposit_batch(no_access_account.wallet_address)
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &no_access_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Attempt to withdraw donations without any proof
+        let manifest = ManifestBuilder::new()
+            .call_method(donation_component, "withdraw_donations", manifest_args!())
+            .deposit_batch(no_access_account.wallet_address)
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &no_access_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Attempt to withdraw with admin proof from the owner account
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_amount(
+                admin_account.wallet_address,
+                admin_badge_resource,
+                dec!(1),
+            )
+            .call_method(donation_component, "withdraw_donations", manifest_args!())
+            .deposit_batch(admin_account.wallet_address)
+            .build();
+
+        let receipt = base.test_runner.execute_manifest_ignoring_fee(
+            manifest,
+            vec![NonFungibleGlobalId::from_public_key(
+                &admin_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+
+        assert_eq!(
+            base.test_runner
+                .account_balance(admin_account.wallet_address, RADIX_TOKEN),
+            Some(dec!(10100))
+        );
+
+        let rdx_vaults = base
+            .test_runner
+            .get_component_vaults(donation_component, RADIX_TOKEN)[1];
+        assert_eq!(
+            base.test_runner.inspect_vault_balance(rdx_vaults),
+            Some(dec!(0))
+        );
+    }
 }
