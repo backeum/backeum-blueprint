@@ -7,11 +7,12 @@ pub(crate) fn generate_url(
     donated: Decimal,
     created: String,
     nft_id: String,
+    collection_id: String,
     user_identity: String,
 ) -> String {
     format!(
-        "{}?donated={}&created={}&nft_id={}&user_identity={}",
-        base_path, donated, created, nft_id, user_identity
+        "{}/{}?donated={}&created={}&nft_id={}&user_identity={}",
+        base_path, collection_id, donated, created, nft_id, user_identity
     )
 }
 
@@ -47,6 +48,9 @@ mod donation {
 
         // Specific user identity that owns this component
         user_identity: String,
+
+        // Which collection this donation component is for
+        collection_id: String,
     }
 
     impl Donation {
@@ -54,6 +58,7 @@ mod donation {
             trophy_resource_manager: ResourceManager,
             minter_badge: Bucket,
             user_identity: String,
+            collection_id: String,
         ) -> (Global<Donation>, Bucket) {
             // Creating an admin badge for the admin role, return it to the component creator.
             let admin_badge = ResourceBuilder::new_fungible(OwnerRole::None)
@@ -67,9 +72,10 @@ mod donation {
                 .mint_initial_supply(1);
 
             let component = Self {
-                minter_badge: Vault::with_bucket(minter_badge),
-                donations: Vault::new(RADIX_TOKEN),
+                minter_badge: Vault::with_bucket(minter_badge.into()),
+                donations: Vault::new(XRD),
                 user_identity,
+                collection_id,
                 trophy_resource_manager,
             }
             .instantiate()
@@ -79,16 +85,25 @@ mod donation {
             ))
             .globalize();
 
-            (component, admin_badge)
+            (component, admin_badge.into())
         }
 
-        // donate is a public method, callable by anyone who want to donate to the user.
+        // donate_mint is a public method, callable by anyone who want to donate to the user.
         pub fn donate_mint(&mut self, tokens: Bucket) -> Bucket {
+            // Push a proof of minter badge to the local auth zone for minting a trophy.
             LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
-            let domain: String = self.trophy_resource_manager.get_metadata("domain").unwrap();
+
+            // Get the domain name used from the trophy resource manager.
+            let domain: String = self
+                .trophy_resource_manager
+                .get_metadata("domain")
+                .unwrap()
+                .expect("No domain on NFT repository");
+
             let created = generate_created_string();
             let mut data = TrophyData {
                 user_identity: self.user_identity.clone(),
+                collection_id: self.collection_id.clone(),
                 created: created.clone(),
                 donated: dec!(0),
                 key_image_url: "".to_string(),
@@ -111,6 +126,7 @@ mod donation {
                 data.donated,
                 data.created,
                 nft_id.to_string(),
+                self.collection_id.clone(),
                 data.user_identity,
             );
 
@@ -131,7 +147,11 @@ mod donation {
         // donate is a public method, callable by anyone who want to donate to the user.
         pub fn donate_update(&mut self, tokens: Bucket, proof: Proof) {
             LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
-            let domain: String = self.trophy_resource_manager.get_metadata("domain").unwrap();
+            let domain: String = self
+                .trophy_resource_manager
+                .get_metadata("domain")
+                .unwrap()
+                .expect("No domain on NFT repository");
 
             // Check that the proof is of same resource address.
             let checked_proof = proof.check(self.trophy_resource_manager.address());
@@ -155,6 +175,7 @@ mod donation {
                 data.donated,
                 data.created,
                 nft_id.to_string(),
+                self.collection_id.clone(),
                 data.user_identity,
             );
 

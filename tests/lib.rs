@@ -15,7 +15,7 @@ mod tests {
     }
 
     impl TestAccount {
-        fn new(test_runner: &mut TestRunner) -> Self {
+        fn new(test_runner: &mut DefaultTestRunner) -> Self {
             let (public_key, _private_key, component_address) = test_runner.new_allocated_account();
             Self {
                 public_key,
@@ -26,7 +26,7 @@ mod tests {
     }
 
     struct TestSetup {
-        test_runner: TestRunner,
+        test_runner: DefaultTestRunner,
         package_address: PackageAddress,
         repository_component: ComponentAddress,
         owner_account: TestAccount,
@@ -36,7 +36,7 @@ mod tests {
 
     impl TestSetup {
         fn new() -> Self {
-            let mut test_runner = TestRunner::builder().without_trace().build();
+            let mut test_runner = TestRunnerBuilder::new().without_trace().build();
 
             // Create an owner account
             let owner_account = TestAccount::new(&mut test_runner);
@@ -70,11 +70,15 @@ mod tests {
                     "Repository",
                     "new",
                     manifest_args!(
-                        "https://localhost:8080/nft_image",
+                        "https://localhost:8080/nft/collection",
                         owner_badge_resource_address
                     ),
                 )
-                .try_deposit_batch_or_abort(owner_account.wallet_address)
+                .try_deposit_batch_or_abort(
+                    owner_account.wallet_address,
+                    ManifestExpression::EntireWorktop,
+                    None,
+                )
                 .build();
 
             // Execute the manifest.
@@ -105,11 +109,6 @@ mod tests {
     }
 
     #[test]
-    fn repository_new() {
-        TestSetup::new();
-    }
-
-    #[test]
     fn repository_update_base_path() {
         let mut base = TestSetup::new();
 
@@ -123,7 +122,7 @@ mod tests {
             .call_method(
                 base.repository_component,
                 "new_donation_component",
-                manifest_args!(),
+                manifest_args!("user_identity_id", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
             .build();
@@ -141,13 +140,13 @@ mod tests {
 
         // Donate and mint trophy
         let manifest2 = ManifestBuilder::new()
-            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, "trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy")
             .build();
 
         let receipt2 = base.test_runner.execute_manifest_ignoring_fee(
@@ -159,16 +158,16 @@ mod tests {
 
         receipt2.expect_commit_success();
         assert_eq!(
-            base.test_runner.account_balance(
+            base.test_runner.get_component_balance(
                 donation_account.wallet_address,
                 base.trophy_resource_address
             ),
-            Some(dec!(1))
+            dec!(1)
         );
         assert_eq!(
             base.test_runner
-                .account_balance(donation_account.wallet_address, RADIX_TOKEN),
-            Some(dec!(9900))
+                .get_component_balance(donation_account.wallet_address, XRD),
+            dec!(9900)
         );
 
         // Get the Non fungible id out of the stack
@@ -176,12 +175,19 @@ mod tests {
             donation_account.wallet_address,
             base.trophy_resource_address,
         );
-        let vault_content = base
+        let (amount, _) = base
             .test_runner
             .inspect_non_fungible_vault(trophy_vault[0])
             .unwrap();
-        assert_eq!(vault_content.0, dec!(1));
-        let trophy_id = vault_content.1.unwrap();
+        assert_eq!(amount, dec!(1));
+
+        let trophy_id = base
+            .test_runner
+            .inspect_non_fungible_vault(trophy_vault[0])
+            .unwrap()
+            .1
+            .next()
+            .unwrap();
 
         // Test rejection to update the base path with a donation account
         let manifest3 = ManifestBuilder::new()
@@ -272,7 +278,7 @@ mod tests {
             .call_method(
                 base.repository_component,
                 "new_donation_component",
-                manifest_args!(),
+                manifest_args!("user_identity_id", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
             .build();
@@ -290,13 +296,13 @@ mod tests {
 
         // Donate and mint trophy
         let manifest = ManifestBuilder::new()
-            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, "trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy")
             .build();
 
         let receipt = base.test_runner.execute_manifest_ignoring_fee(
@@ -308,16 +314,16 @@ mod tests {
 
         receipt.expect_commit_success();
         assert_eq!(
-            base.test_runner.account_balance(
+            base.test_runner.get_component_balance(
                 donation_account.wallet_address,
                 base.trophy_resource_address
             ),
-            Some(dec!(1))
+            dec!(1)
         );
         assert_eq!(
             base.test_runner
-                .account_balance(donation_account.wallet_address, RADIX_TOKEN),
-            Some(dec!(9900))
+                .get_component_balance(donation_account.wallet_address, XRD),
+            dec!(9900)
         );
 
         // Get the Non fungible id out of the stack
@@ -325,23 +331,30 @@ mod tests {
             donation_account.wallet_address,
             base.trophy_resource_address,
         );
-        let vault_content = base
+        let (amount, _) = base
             .test_runner
             .inspect_non_fungible_vault(trophy_vault[0])
             .unwrap();
-        assert_eq!(vault_content.0, dec!(1));
-        let trophy_id = vault_content.1.unwrap();
+        assert_eq!(amount, dec!(1));
+
+        let trophy_id = base
+            .test_runner
+            .inspect_non_fungible_vault(trophy_vault[0])
+            .unwrap()
+            .1
+            .next()
+            .unwrap();
 
         // Donate and update trophy
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungibles(
                 donation_account.wallet_address,
                 base.trophy_resource_address,
-                &btreeset!(trophy_id.clone()),
+                btreeset!(trophy_id.clone()),
             )
             .pop_from_auth_zone("trophy")
-            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             })
@@ -363,11 +376,11 @@ mod tests {
             .create_proof_from_account_of_non_fungibles(
                 admin_account.wallet_address,
                 base.trophy_resource_address,
-                &btreeset!(trophy_id.clone()),
+                btreeset!(trophy_id.clone()),
             )
             .pop_from_auth_zone("trophy")
-            .withdraw_from_account(donation_account.wallet_address, RADIX_TOKEN, dec!(100))
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             })
@@ -384,17 +397,13 @@ mod tests {
 
         // Donate and mint trophy with new account, and attempt fake update wrong NF id.
         let manifest = ManifestBuilder::new()
-            .withdraw_from_account(
-                donation_account_wrong_nft.wallet_address,
-                RADIX_TOKEN,
-                dec!(100),
-            )
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(donation_account_wrong_nft.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account_wrong_nft.wallet_address, "trophy")
+            .try_deposit_or_abort(donation_account_wrong_nft.wallet_address, None, "trophy")
             .build();
 
         let receipt = base.test_runner.execute_manifest_ignoring_fee(
@@ -411,15 +420,11 @@ mod tests {
             .create_proof_from_account_of_non_fungibles(
                 donation_account_wrong_nft.wallet_address,
                 base.trophy_resource_address,
-                &btreeset!(trophy_id.clone()),
+                btreeset!(trophy_id.clone()),
             )
             .pop_from_auth_zone("trophy")
-            .withdraw_from_account(
-                donation_account_wrong_nft.wallet_address,
-                RADIX_TOKEN,
-                dec!(100),
-            )
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(donation_account_wrong_nft.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             })
@@ -449,7 +454,7 @@ mod tests {
             .call_method(
                 base.repository_component,
                 "new_donation_component",
-                manifest_args!(),
+                manifest_args!("user_identity_id", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
             .build();
@@ -469,13 +474,13 @@ mod tests {
 
         // Donate and mint trophy with the no access account
         let manifest = ManifestBuilder::new()
-            .withdraw_from_account(no_access_account.wallet_address, RADIX_TOKEN, dec!(100))
-            .take_from_worktop(RADIX_TOKEN, dec!(100), "donation_amount")
+            .withdraw_from_account(no_access_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(no_access_account.wallet_address, "trophy")
+            .try_deposit_or_abort(no_access_account.wallet_address, None, "trophy")
             .build();
 
         let receipt = base.test_runner.execute_manifest_ignoring_fee(
@@ -487,20 +492,20 @@ mod tests {
 
         receipt.expect_commit_success();
         assert_eq!(
-            base.test_runner.account_balance(
+            base.test_runner.get_component_balance(
                 no_access_account.wallet_address,
                 base.trophy_resource_address
             ),
-            Some(dec!(1))
+            dec!(1)
         );
         assert_eq!(
             base.test_runner
-                .account_balance(no_access_account.wallet_address, RADIX_TOKEN),
-            Some(dec!(9900))
+                .get_component_balance(no_access_account.wallet_address, XRD),
+            dec!(9900)
         );
         let rdx_vaults = base
             .test_runner
-            .get_component_vaults(donation_component, RADIX_TOKEN)[1];
+            .get_component_vaults(donation_component, XRD)[0];
         assert_eq!(
             base.test_runner.inspect_vault_balance(rdx_vaults),
             Some(dec!(100))
@@ -563,13 +568,13 @@ mod tests {
 
         assert_eq!(
             base.test_runner
-                .account_balance(admin_account.wallet_address, RADIX_TOKEN),
-            Some(dec!(10100))
+                .get_component_balance(admin_account.wallet_address, XRD),
+            dec!(10100)
         );
 
         let rdx_vaults = base
             .test_runner
-            .get_component_vaults(donation_component, RADIX_TOKEN)[1];
+            .get_component_vaults(donation_component, XRD)[0];
         assert_eq!(
             base.test_runner.inspect_vault_balance(rdx_vaults),
             Some(dec!(0))

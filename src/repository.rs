@@ -6,6 +6,7 @@ use scrypto::prelude::*;
 pub(crate) struct TrophyData {
     pub created: String,
     pub user_identity: String,
+    pub collection_id: String,
     #[mutable]
     pub donated: Decimal,
     #[mutable]
@@ -35,7 +36,7 @@ mod repository {
     impl Repository {
         pub fn new(base_path: String, owner_badge: ResourceAddress) -> Global<Repository> {
             let (address_reservation, component_address) =
-                Runtime::allocate_component_address(Runtime::blueprint_id());
+                Runtime::allocate_component_address(Repository::blueprint_id());
 
             // Setup owner badge access rule
             let owner_badge_access_rule: AccessRule = rule!(require(owner_badge));
@@ -106,9 +107,18 @@ mod repository {
         // a mint badge that allows for it to create and update trophies. By going through Repository
         // for instantiation we can ensure that the mint badge is only given to a contract that is
         // made by Backeum.
-        pub fn new_donation_component(&mut self) -> (Global<Donation>, Bucket) {
+        pub fn new_donation_component(
+            &mut self,
+            user_identity: String,
+            collection_id: String,
+        ) -> (Global<Donation>, Bucket) {
             let mint_badge = self.minter_badge_manager.mint(1);
-            Donation::new(self.trophy_resource_manager, mint_badge, "".to_string())
+            Donation::new(
+                self.trophy_resource_manager,
+                mint_badge,
+                user_identity,
+                collection_id,
+            )
         }
 
         // update_base_path updates the base path for each trophy.
@@ -131,6 +141,7 @@ mod repository {
                     data.donated,
                     data.created,
                     nft_id.to_string(),
+                    data.collection_id,
                     data.user_identity,
                 );
 
