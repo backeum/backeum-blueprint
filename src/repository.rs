@@ -5,6 +5,13 @@ use scrypto::prelude::*;
 
 #[blueprint]
 mod repository {
+    enable_package_royalties! {
+        new => Free;
+        new_donation_component => Xrd(20.into());
+        update_base_path => Free;
+        update_royalty_amount => Free;
+    }
+
     enable_method_auth! {
         roles {
             trophy_minter => updatable_by: [OWNER];
@@ -12,6 +19,7 @@ mod repository {
         methods {
             new_donation_component => PUBLIC;
             update_base_path => restrict_to: [OWNER];
+            update_royalty_amount => restrict_to: [OWNER];
         }
     }
 
@@ -21,6 +29,12 @@ mod repository {
 
         // Badge for being able to mint trophies.
         minter_badge_manager: ResourceManager,
+
+        // The owner badge resource address used to set ownership of sub components.
+        owner_badge_resource_address: ResourceAddress,
+
+        // Set the royalty amount on new collections.
+        royalty_amount: Decimal,
     }
 
     impl Repository {
@@ -63,7 +77,9 @@ mod repository {
                     init {
                         "name" => "Backeum Trophies", locked;
                         "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
-                        "domain" => base_path, updatable;
+                        "domain" => format!("{}", base_path), updatable;
+                        "tags" => vec!["backeum", "trophy"], locked;
+                        "info_url" => format!("{}", base_path), locked;
                     }
                 ))
                 .withdraw_roles(withdraw_roles!(
@@ -83,6 +99,8 @@ mod repository {
             Self {
                 trophy_resource_manager,
                 minter_badge_manager,
+                owner_badge_resource_address: owner_badge,
+                royalty_amount: dec!(15),
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::Fixed(owner_badge_access_rule.clone()))
@@ -105,6 +123,8 @@ mod repository {
             let mint_badge = self.minter_badge_manager.mint(1);
             Collection::new(
                 self.trophy_resource_manager,
+                self.owner_badge_resource_address,
+                self.royalty_amount,
                 mint_badge,
                 user_identity,
                 collection_id,
@@ -140,6 +160,11 @@ mod repository {
                     data.key_image_url,
                 );
             }
+        }
+
+        // update_royalty_amount updates the royalty amount for each new collection.
+        pub fn update_royalty_amount(&mut self, new_royalty_amount: Decimal) {
+            self.royalty_amount = new_royalty_amount;
         }
     }
 }

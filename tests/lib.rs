@@ -69,10 +69,7 @@ mod tests {
                     package_address,
                     "Repository",
                     "new",
-                    manifest_args!(
-                        "https://localhost:8080/nft/collection",
-                        owner_badge_resource_address
-                    ),
+                    manifest_args!("https://localhost:8080", owner_badge_resource_address),
                 )
                 .try_deposit_batch_or_abort(
                     owner_account.wallet_address,
@@ -336,11 +333,11 @@ mod tests {
             .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
 
         assert_eq!(data.created, "1970-1-1");
-        assert_eq!(data.donated, dec!(100));
+        assert_eq!(data.donated, dec!(115));
         assert_eq!(data.collection_id, "collection_id");
         assert_eq!(
             data.key_image_url,
-            "https://localhost:8080/nft/collection/collection_id?donated=100&created=1970-1-1"
+            "https://localhost:8080/nft/collection/collection_id?donated=115&created=1970-1-1"
         );
 
         // Get the Non fungible id out of the stack
@@ -402,11 +399,11 @@ mod tests {
             .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
 
         assert_eq!(data.created, "1970-1-1");
-        assert_eq!(data.donated, dec!(200));
+        assert_eq!(data.donated, dec!(230));
         assert_eq!(data.collection_id, "collection_id");
         assert_eq!(
             data.key_image_url,
-            "https://localhost:8080/nft/collection/collection_id?donated=200&created=1970-1-1"
+            "https://localhost:8080/nft/collection/collection_id?donated=230&created=1970-1-1"
         );
 
         // Donate and update trophy with the wrong account, should fail, admin_account does not have
@@ -544,7 +541,7 @@ mod tests {
         );
         let rdx_vaults = base
             .test_runner
-            .get_component_vaults(donation_component, XRD)[0];
+            .get_component_vaults(donation_component, XRD)[1];
         assert_eq!(
             base.test_runner.inspect_vault_balance(rdx_vaults),
             Some(dec!(100))
@@ -613,7 +610,7 @@ mod tests {
 
         let rdx_vaults = base
             .test_runner
-            .get_component_vaults(donation_component, XRD)[0];
+            .get_component_vaults(donation_component, XRD)[1];
         assert_eq!(
             base.test_runner.inspect_vault_balance(rdx_vaults),
             Some(dec!(0))

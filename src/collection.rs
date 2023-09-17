@@ -9,7 +9,7 @@ pub fn generate_url(
     collection_id: String,
 ) -> String {
     format!(
-        "{}/{}?donated={}&created={}",
+        "{}/nft/collection/{}?donated={}&created={}",
         base_path, collection_id, donated, created
     )
 }
@@ -48,15 +48,25 @@ mod collection {
 
         // Which collection this donation component is for
         collection_id: String,
+
+        // Set the royalty amount on donations in this collection.
+        royalty_amount: Decimal,
     }
 
     impl Collection {
         pub fn new(
             trophy_resource_manager: ResourceManager,
+            owner_badge: ResourceAddress,
+            royalty_amount: Decimal,
             minter_badge: Bucket,
             user_identity: String,
             collection_id: String,
         ) -> (Global<Collection>, Bucket) {
+            let domain: String = trophy_resource_manager
+                .get_metadata("domain")
+                .unwrap()
+                .expect("No domain on NFT repository");
+
             // Creating an admin badge for the admin role, return it to the component creator.
             let admin_badge = ResourceBuilder::new_fungible(OwnerRole::None)
                 .divisibility(DIVISIBILITY_NONE)
@@ -64,6 +74,9 @@ mod collection {
                     init {
                         "name" => "Admin Badge", locked;
                         "description" => "Used to manage your Backeum donation contract", locked;
+                        "icon_url" => format!("{}{}", domain, "/bucket/assets/wallet-assets/admin-badge.png"), locked;
+                        "tags" => vec!["backeum", "badge"], locked;
+                        "info_url" => domain, locked;
                     }
                 ))
                 .mint_initial_supply(1);
@@ -74,9 +87,25 @@ mod collection {
                 user_identity,
                 collection_id,
                 trophy_resource_manager,
+                royalty_amount,
             }
             .instantiate()
-            .prepare_to_globalize(OwnerRole::None)
+            .prepare_to_globalize(OwnerRole::Fixed(rule!(require(owner_badge))))
+            .enable_component_royalties(component_royalties! {
+                roles {
+                    royalty_setter => rule!(require(owner_badge));
+                    royalty_setter_updater => rule!(deny_all);
+                    royalty_locker => rule!(require(owner_badge));
+                    royalty_locker_updater => rule!(deny_all);
+                    royalty_claimer => rule!(require(owner_badge));
+                    royalty_claimer_updater => rule!(deny_all);
+                },
+                init {
+                    donate_mint => Xrd(royalty_amount.into()), updatable;
+                    donate_update => Xrd(royalty_amount.into()), updatable;
+                    withdraw_donations => Free, locked;
+                }
+            })
             .roles(roles!(
                 admin => rule!(require(admin_badge.resource_address()));
             ))
@@ -117,6 +146,7 @@ mod collection {
 
             // Generate new data based on the updated donation value.
             data.donated += tokens.amount();
+            data.donated += self.royalty_amount;
             data.key_image_url = generate_url(
                 domain.to_string(),
                 data.donated,
@@ -158,6 +188,7 @@ mod collection {
 
             // Generate new data based on the updated donation value.
             data.donated += tokens.amount();
+            data.donated += self.royalty_amount;
             data.key_image_url = generate_url(
                 domain.to_string(),
                 data.donated,
