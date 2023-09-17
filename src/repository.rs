@@ -7,7 +7,7 @@ use scrypto::prelude::*;
 mod repository {
     enable_package_royalties! {
         new => Free;
-        new_donation_component => Xrd(20.into());
+        new_collection_component => Xrd(20.into());
         update_base_path => Free;
         update_royalty_amount => Free;
     }
@@ -17,7 +17,7 @@ mod repository {
             trophy_minter => updatable_by: [OWNER];
         },
         methods {
-            new_donation_component => PUBLIC;
+            new_collection_component => PUBLIC;
             update_base_path => restrict_to: [OWNER];
             update_royalty_amount => restrict_to: [OWNER];
         }
@@ -111,11 +111,11 @@ mod repository {
             .globalize()
         }
 
-        // new_donation_component sets up a new donation component for a user, and give that contract
+        // new_collection_component sets up a new collection component for a user, and give that contract
         // a mint badge that allows for it to create and update trophies. By going through Repository
         // for instantiation we can ensure that the mint badge is only given to a contract that is
         // made by Backeum.
-        pub fn new_donation_component(
+        pub fn new_collection_component(
             &mut self,
             user_identity: String,
             collection_id: String,

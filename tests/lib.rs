@@ -1,9 +1,21 @@
 use donation_component::data::TrophyData;
+use radix_engine::transaction::TransactionReceipt;
 use scrypto::prelude::*;
 use scrypto_unit::*;
+use transaction::manifest::decompiler::ManifestObjectNames;
 use transaction::{
     builder::ManifestBuilder, prelude::Secp256k1PrivateKey, prelude::Secp256k1PublicKey,
+    prelude::TransactionManifestV1,
 };
+
+#[derive(ScryptoSbor, ManifestSbor, NonFungibleData)]
+struct Nft {
+    name: String,
+    description: String,
+    icon_url: String,
+    info_url: String,
+    tags: Vec<String>,
+}
 
 #[cfg(test)]
 mod tests {
@@ -34,6 +46,33 @@ mod tests {
         trophy_resource_address: ResourceAddress,
     }
 
+    impl Execute {
+        fn execute_manifest_ignoring_fee<T>(
+            test_runner: &mut DefaultTestRunner,
+            manifest_names: ManifestObjectNames,
+            manifest: TransactionManifestV1,
+            name: &str,
+            network: &NetworkDefinition,
+            initial_proofs: T,
+        ) -> TransactionReceipt
+        where
+            T: IntoIterator<Item = NonFungibleGlobalId>,
+        {
+            dump_manifest_to_file_system(
+                manifest_names,
+                &manifest,
+                "./transaction-manifest",
+                Some(name),
+                network,
+            )
+            .err();
+
+            test_runner.execute_manifest_ignoring_fee(manifest, initial_proofs)
+        }
+    }
+
+    struct Execute {}
+
     impl TestSetup {
         fn new() -> Self {
             let mut test_runner = TestRunnerBuilder::new().without_trace().build();
@@ -44,15 +83,48 @@ mod tests {
             // Publish package
             let package_address = test_runner.compile_and_publish(this_package!());
 
+            let mut metadata = BTreeMap::new();
+            metadata.insert(
+                "name".to_string(),
+                MetadataValue::String("Backeum Admin Badges".to_string()),
+            );
+            metadata.insert(
+                "description".to_string(),
+                MetadataValue::String("Grants admin ownership of backeum contracts".to_string()),
+            );
+            metadata.insert(
+                "info_url".to_string(),
+                MetadataValue::String("https://staging.backeum.com".to_string()),
+            );
+            metadata.insert(
+                "tags".to_string(),
+                MetadataValue::StringArray(vec!["backeum".to_string(), "badge".to_string()]),
+            );
+            metadata.insert(
+                "icon_url".to_string(),
+                MetadataValue::Url(UncheckedUrl(
+                    "https://staging.backeum.com/bucket/assets/wallet-assets/admin-badge.png"
+                        .to_string(),
+                )),
+            );
+
+            let metadata = ModuleConfig {
+                init: metadata.into(),
+                roles: RoleAssignmentInit::default(),
+            };
+
             // Create an owner badge used for repository component.
             let manifest1 = ManifestBuilder::new()
-                .new_badge_fixed(OwnerRole::None, Default::default(), dec!(1))
-                .deposit_batch(owner_account.wallet_address)
-                .build();
+                .new_badge_fixed(OwnerRole::None, metadata, dec!(1))
+                .deposit_batch(owner_account.wallet_address);
 
             // Execute the manifest.
-            let receipt1 = test_runner.execute_manifest_ignoring_fee(
-                manifest1,
+            let receipt1 = Execute::execute_manifest_ignoring_fee(
+                &mut test_runner,
+                manifest1.object_names(),
+                manifest1.build(),
+                "create_new_owner_badge",
+                &NetworkDefinition::simulator(),
                 vec![NonFungibleGlobalId::from_public_key(
                     &owner_account.public_key,
                 )],
@@ -75,12 +147,15 @@ mod tests {
                     owner_account.wallet_address,
                     ManifestExpression::EntireWorktop,
                     None,
-                )
-                .build();
+                );
 
             // Execute the manifest.
-            let receipt2 = test_runner.execute_manifest_ignoring_fee(
-                manifest2,
+            let receipt2 = Execute::execute_manifest_ignoring_fee(
+                &mut test_runner,
+                manifest2.object_names(),
+                manifest2.build(),
+                "instantiate_new_repository",
+                &NetworkDefinition::simulator(),
                 vec![NonFungibleGlobalId::from_public_key(
                     &owner_account.public_key,
                 )],
@@ -117,15 +192,19 @@ mod tests {
         let manifest1 = ManifestBuilder::new()
             .call_method(
                 base.repository_component,
-                "new_donation_component",
+                "new_collection_component",
                 manifest_args!("user_identity_id", "collection_id"),
             )
-            .deposit_batch(admin_account.wallet_address)
-            .build();
+            .deposit_batch(admin_account.wallet_address);
 
         // Execute it
-        let receipt1 = base.test_runner.execute_manifest_ignoring_fee(
-            manifest1,
+        // Execute the manifest.
+        let receipt1 = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest1.object_names(),
+            manifest1.build(),
+            "instantiate_new_collection_component",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &admin_account.public_key,
             )],
@@ -142,11 +221,14 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy")
-            .build();
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
 
-        let receipt2 = base.test_runner.execute_manifest_ignoring_fee(
-            manifest2,
+        let receipt2 = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest2.object_names(),
+            manifest2.build(),
+            "create_new_owner_badge",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],
@@ -196,11 +278,14 @@ mod tests {
                 base.repository_component,
                 "update_base_path",
                 manifest_args!("https://some_other_url/nft_image", vec![trophy_id.clone()]),
-            )
-            .build();
+            );
 
-        let receipt3 = base.test_runner.execute_manifest_ignoring_fee(
-            manifest3,
+        let receipt3 = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest3.object_names(),
+            manifest3.build(),
+            "update_base_path_repository",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],
@@ -268,7 +353,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .call_method(
                 base.repository_component,
-                "new_donation_component",
+                "new_collection_component",
                 manifest_args!("user_identity_id", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
@@ -293,11 +378,14 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy")
-            .build();
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
 
-        let receipt = base.test_runner.execute_manifest_ignoring_fee(
-            manifest,
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "donation_mint",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],
@@ -371,11 +459,14 @@ mod tests {
             .take_from_worktop(XRD, dec!(100), "donation_amount")
             .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
-            })
-            .build();
+            });
 
-        let receipt = base.test_runner.execute_manifest_ignoring_fee(
-            manifest,
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "donation_update",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],
@@ -489,7 +580,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .call_method(
                 base.repository_component,
-                "new_donation_component",
+                "new_collection_component",
                 manifest_args!("user_identity_id", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
@@ -555,11 +646,14 @@ mod tests {
                 dec!(1),
             )
             .call_method(donation_component, "withdraw_donations", manifest_args!())
-            .deposit_batch(no_access_account.wallet_address)
-            .build();
+            .deposit_batch(no_access_account.wallet_address);
 
-        let receipt = base.test_runner.execute_manifest_ignoring_fee(
-            manifest,
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "withdraw_donations_no_access",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &no_access_account.public_key,
             )],
@@ -590,11 +684,14 @@ mod tests {
                 dec!(1),
             )
             .call_method(donation_component, "withdraw_donations", manifest_args!())
-            .deposit_batch(admin_account.wallet_address)
-            .build();
+            .deposit_batch(admin_account.wallet_address);
 
-        let receipt = base.test_runner.execute_manifest_ignoring_fee(
-            manifest,
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "withdraw_donations_admin",
+            &NetworkDefinition::simulator(),
             vec![NonFungibleGlobalId::from_public_key(
                 &admin_account.public_key,
             )],

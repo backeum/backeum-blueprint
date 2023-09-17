@@ -1,0 +1,14 @@
+CALL_METHOD
+    Address("account_sim1cymlz28nc48t7mc5vzgw2lpa3v2dwqtmf5pmx7kwsj8wt3s0d77697")
+    "create_proof_of_amount"
+    Address("resource_sim1t5s0rnmld9e9jhrd2ujcnp0np4n30ph0u9307ulnr28tvrjyljakgf")
+    Decimal("1")
+;
+CALL_METHOD
+    Address("component_sim1czjxt2hcg483frrsgq58lh4f9zs84ck3zn6mf6pch32c3744ezhnfa")
+    "update_base_path"
+    "https://some_other_url/nft_image"
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{d39d85555a21d772-c812c6fa7cbb5f8f-ced18ac25ffa64f3-366a65b940197918}")
+    )
+;

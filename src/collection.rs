@@ -73,7 +73,7 @@ mod collection {
                 .metadata(metadata!(
                     init {
                         "name" => "Admin Badge", locked;
-                        "description" => "Used to manage your Backeum donation contract", locked;
+                        "description" => "Used to manage your Backeum collection contract", locked;
                         "icon_url" => format!("{}{}", domain, "/bucket/assets/wallet-assets/admin-badge.png"), locked;
                         "tags" => vec!["backeum", "badge"], locked;
                         "info_url" => domain, locked;
@@ -101,8 +101,8 @@ mod collection {
                     royalty_claimer_updater => rule!(deny_all);
                 },
                 init {
-                    donate_mint => Xrd(royalty_amount.into()), updatable;
-                    donate_update => Xrd(royalty_amount.into()), updatable;
+                    donate_mint => Xrd(royalty_amount), updatable;
+                    donate_update => Xrd(royalty_amount), updatable;
                     withdraw_donations => Free, locked;
                 }
             })

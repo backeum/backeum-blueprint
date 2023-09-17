@@ -1,0 +1,15 @@
+CALL_METHOD
+    Address("account_sim1cymlz28nc48t7mc5vzgw2lpa3v2dwqtmf5pmx7kwsj8wt3s0d77697")
+    "create_proof_of_amount"
+    Address("resource_sim1t4htdujammq9lrrkz9gynyvg3avlad2ahmm692wmzvdrvz0vj53jyr")
+    Decimal("1")
+;
+CALL_METHOD
+    Address("component_sim1cpvqxfhrk035tgnhpy2kh7eu5y0a07qngk2khl338k3awwqer3hs29")
+    "withdraw_donations"
+;
+CALL_METHOD
+    Address("account_sim1cymlz28nc48t7mc5vzgw2lpa3v2dwqtmf5pmx7kwsj8wt3s0d77697")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP")
+;
