@@ -72,7 +72,7 @@ mod donation {
                 .mint_initial_supply(1);
 
             let component = Self {
-                minter_badge: Vault::with_bucket(minter_badge.into()),
+                minter_badge: Vault::with_bucket(minter_badge),
                 donations: Vault::new(XRD),
                 user_identity,
                 collection_id,
