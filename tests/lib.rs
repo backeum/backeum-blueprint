@@ -1,3 +1,4 @@
+use donation_component::data::TrophyData;
 use scrypto::prelude::*;
 use scrypto_unit::*;
 use transaction::{
@@ -318,6 +319,29 @@ mod tests {
                 .get_component_balance(donation_account.wallet_address, XRD),
             dec!(9900)
         );
+        let trophy_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+        let trophy_id = base
+            .test_runner
+            .inspect_non_fungible_vault(trophy_vault[0])
+            .unwrap()
+            .1
+            .next()
+            .unwrap();
+
+        let data: TrophyData = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
+
+        assert_eq!(data.created, "1970-1-1");
+        assert_eq!(data.donated, dec!(100));
+        assert_eq!(data.collection_id, "collection_id");
+        assert_eq!(
+            data.key_image_url,
+            "https://localhost:8080/nft/collection/collection_id?donated=100&created=1970-1-1"
+        );
 
         // Get the Non fungible id out of the stack
         let trophy_vault = base.test_runner.get_component_vaults(
@@ -361,7 +385,29 @@ mod tests {
         );
 
         receipt.expect_commit_success();
-        // TODO: Check metadata is correct on NF when it comes to amount donated.
+        let trophy_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+        let trophy_id = base
+            .test_runner
+            .inspect_non_fungible_vault(trophy_vault[0])
+            .unwrap()
+            .1
+            .next()
+            .unwrap();
+
+        let data: TrophyData = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
+
+        assert_eq!(data.created, "1970-1-1");
+        assert_eq!(data.donated, dec!(200));
+        assert_eq!(data.collection_id, "collection_id");
+        assert_eq!(
+            data.key_image_url,
+            "https://localhost:8080/nft/collection/collection_id?donated=200&created=1970-1-1"
+        );
 
         // Donate and update trophy with the wrong account, should fail, admin_account does not have
         // the NFT in account.

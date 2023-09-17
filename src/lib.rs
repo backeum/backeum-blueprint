@@ -1,2 +1,3 @@
-mod donation;
+mod collection;
+pub mod data;
 mod repository;

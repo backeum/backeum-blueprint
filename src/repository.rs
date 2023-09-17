@@ -1,17 +1,7 @@
-use crate::donation::donation::Donation;
-use crate::donation::generate_url;
+use crate::collection::collection::Collection;
+use crate::collection::generate_url;
+use crate::data::TrophyData;
 use scrypto::prelude::*;
-
-#[derive(ScryptoSbor, NonFungibleData, Clone)]
-pub(crate) struct TrophyData {
-    pub created: String,
-    pub user_identity: String,
-    pub collection_id: String,
-    #[mutable]
-    pub donated: Decimal,
-    #[mutable]
-    pub key_image_url: String,
-}
 
 #[blueprint]
 mod repository {
@@ -111,9 +101,9 @@ mod repository {
             &mut self,
             user_identity: String,
             collection_id: String,
-        ) -> (Global<Donation>, Bucket) {
+        ) -> (Global<Collection>, Bucket) {
             let mint_badge = self.minter_badge_manager.mint(1);
-            Donation::new(
+            Collection::new(
                 self.trophy_resource_manager,
                 mint_badge,
                 user_identity,
@@ -140,9 +130,7 @@ mod repository {
                     new_base_path.to_string(),
                     data.donated,
                     data.created,
-                    nft_id.to_string(),
                     data.collection_id,
-                    data.user_identity,
                 );
 
                 // Update image url.

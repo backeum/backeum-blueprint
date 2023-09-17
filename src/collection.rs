@@ -1,18 +1,16 @@
-use crate::repository::TrophyData;
+use crate::data::TrophyData;
 use scrypto::prelude::*;
 
 // function to generate the url for the image
-pub(crate) fn generate_url(
+pub fn generate_url(
     base_path: String,
     donated: Decimal,
     created: String,
-    nft_id: String,
     collection_id: String,
-    user_identity: String,
 ) -> String {
     format!(
-        "{}/{}?donated={}&created={}&nft_id={}&user_identity={}",
-        base_path, collection_id, donated, created, nft_id, user_identity
+        "{}/{}?donated={}&created={}",
+        base_path, collection_id, donated, created
     )
 }
 
@@ -23,7 +21,7 @@ fn generate_created_string() -> String {
 }
 
 #[blueprint]
-mod donation {
+mod collection {
     enable_method_auth! {
         roles {
             admin => updatable_by: [];
@@ -35,7 +33,7 @@ mod donation {
         }
     }
 
-    struct Donation {
+    struct Collection {
         // Mints a proof that is used as proof of donated value to the NFT repository.
         trophy_resource_manager: ResourceManager,
 
@@ -43,7 +41,6 @@ mod donation {
         minter_badge: Vault,
 
         // Collected donations
-        // TODO: Enable what tokens to accept as donations.
         donations: Vault,
 
         // Specific user identity that owns this component
@@ -53,13 +50,13 @@ mod donation {
         collection_id: String,
     }
 
-    impl Donation {
+    impl Collection {
         pub fn new(
             trophy_resource_manager: ResourceManager,
             minter_badge: Bucket,
             user_identity: String,
             collection_id: String,
-        ) -> (Global<Donation>, Bucket) {
+        ) -> (Global<Collection>, Bucket) {
             // Creating an admin badge for the admin role, return it to the component creator.
             let admin_badge = ResourceBuilder::new_fungible(OwnerRole::None)
                 .divisibility(DIVISIBILITY_NONE)
@@ -102,7 +99,6 @@ mod donation {
 
             let created = generate_created_string();
             let mut data = TrophyData {
-                user_identity: self.user_identity.clone(),
                 collection_id: self.collection_id.clone(),
                 created: created.clone(),
                 donated: dec!(0),
@@ -125,9 +121,7 @@ mod donation {
                 domain.to_string(),
                 data.donated,
                 data.created,
-                nft_id.to_string(),
                 self.collection_id.clone(),
-                data.user_identity,
             );
 
             // Update NF with new data
@@ -162,21 +156,13 @@ mod donation {
             // Get data from the Trophy data based on NF id.
             let mut data: TrophyData = self.trophy_resource_manager.get_non_fungible_data(&nft_id);
 
-            // Check whether the NF user_identity is owned by this component.
-            assert_eq!(
-                data.user_identity, self.user_identity,
-                "User identity does not match the NF"
-            );
-
             // Generate new data based on the updated donation value.
             data.donated += tokens.amount();
             data.key_image_url = generate_url(
                 domain.to_string(),
                 data.donated,
                 data.created,
-                nft_id.to_string(),
                 self.collection_id.clone(),
-                data.user_identity,
             );
 
             // Update NF with new data
