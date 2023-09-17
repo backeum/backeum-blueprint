@@ -193,7 +193,7 @@ mod tests {
             .call_method(
                 base.repository_component,
                 "new_collection_component",
-                manifest_args!("user_identity_id", "collection_id"),
+                manifest_args!("user_identity_id", "Kansuler", "kansuler", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address);
 
@@ -354,7 +354,7 @@ mod tests {
             .call_method(
                 base.repository_component,
                 "new_collection_component",
-                manifest_args!("user_identity_id", "collection_id"),
+                manifest_args!("user_identity_id", "Kansuler", "kansuler", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
             .build();
@@ -420,6 +420,8 @@ mod tests {
             .test_runner
             .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
 
+        assert_eq!(data.name, "Kansuler's Trophy");
+        assert_eq!(data.info_url, "https://localhost:8080/p/kansuler");
         assert_eq!(data.created, "1970-1-1");
         assert_eq!(data.donated, dec!(115));
         assert_eq!(data.collection_id, "collection_id");
@@ -489,6 +491,8 @@ mod tests {
             .test_runner
             .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
 
+        assert_eq!(data.name, "Kansuler's Trophy");
+        assert_eq!(data.info_url, "https://localhost:8080/p/kansuler");
         assert_eq!(data.created, "1970-1-1");
         assert_eq!(data.donated, dec!(230));
         assert_eq!(data.collection_id, "collection_id");
@@ -581,7 +585,7 @@ mod tests {
             .call_method(
                 base.repository_component,
                 "new_collection_component",
-                manifest_args!("user_identity_id", "collection_id"),
+                manifest_args!("user_identity_id", "Kansuler", "kansuler", "collection_id"),
             )
             .deposit_batch(admin_account.wallet_address)
             .build();

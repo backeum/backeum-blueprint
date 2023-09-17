@@ -46,6 +46,12 @@ mod collection {
         // Specific user identity that owns this component
         user_identity: String,
 
+        // Specific user name that owns this component
+        user_name: String,
+
+        // Specific user slug that owns this component
+        user_slug: String,
+
         // Which collection this donation component is for
         collection_id: String,
 
@@ -60,6 +66,8 @@ mod collection {
             royalty_amount: Decimal,
             minter_badge: Bucket,
             user_identity: String,
+            user_name: String,
+            user_slug: String,
             collection_id: String,
         ) -> (Global<Collection>, Bucket) {
             let domain: String = trophy_resource_manager
@@ -85,6 +93,8 @@ mod collection {
                 minter_badge: Vault::with_bucket(minter_badge),
                 donations: Vault::new(XRD),
                 user_identity,
+                user_name,
+                user_slug,
                 collection_id,
                 trophy_resource_manager,
                 royalty_amount,
@@ -128,6 +138,8 @@ mod collection {
 
             let created = generate_created_string();
             let mut data = TrophyData {
+                name: format!("{}'s Trophy", self.user_name),
+                info_url: format!("{}/p/{}", domain, self.user_slug),
                 collection_id: self.collection_id.clone(),
                 created: created.clone(),
                 donated: dec!(0),

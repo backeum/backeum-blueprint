@@ -2,6 +2,8 @@ CALL_METHOD
     Address("component_sim1czjxt2hcg483frrsgq58lh4f9zs84ck3zn6mf6pch32c3744ezhnfa")
     "new_collection_component"
     "user_identity_id"
+    "Kansuler"
+    "kansuler"
     "collection_id"
 ;
 CALL_METHOD

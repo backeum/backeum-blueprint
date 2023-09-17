@@ -78,6 +78,7 @@ mod repository {
                         "name" => "Backeum Trophies", locked;
                         "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
                         "domain" => format!("{}", base_path), updatable;
+                        "icon_url" => format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png"), locked;
                         "tags" => vec!["backeum", "trophy"], locked;
                         "info_url" => format!("{}", base_path), locked;
                     }
@@ -118,6 +119,8 @@ mod repository {
         pub fn new_collection_component(
             &mut self,
             user_identity: String,
+            user_name: String,
+            user_slug: String,
             collection_id: String,
         ) -> (Global<Collection>, Bucket) {
             let mint_badge = self.minter_badge_manager.mint(1);
@@ -127,6 +130,8 @@ mod repository {
                 self.royalty_amount,
                 mint_badge,
                 user_identity,
+                user_name,
+                user_slug,
                 collection_id,
             )
         }
