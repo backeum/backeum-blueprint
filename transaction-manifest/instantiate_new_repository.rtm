@@ -1,9 +1,9 @@
 CALL_FUNCTION
-    Address("package_sim1pkraxt270a7w3c0wk8maj0djrctjezuq3ftjgkeyjf44ct7rk03jdm")
+    Address("package_sim1phzhvvzxxwcg3w8yn45mhef64gkwp3afphcwv9367cnx25h9pkhj85")
     "Repository"
     "new"
     "https://localhost:8080"
-    Address("resource_sim1t5s0rnmld9e9jhrd2ujcnp0np4n30ph0u9307ulnr28tvrjyljakgf")
+    Address("resource_sim1nfnkwqqnqt8cfnhns58gah77m5xlpqk4fl6q6gg2gqhsk38y6c9p35")
 ;
 CALL_METHOD
     Address("account_sim1cywetnvsd3xuxhrxpa7kn5wvh9ty4z869z3q5f0n4yw3mqsea2ntml")

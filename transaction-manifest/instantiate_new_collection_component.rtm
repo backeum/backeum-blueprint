@@ -1,13 +1,24 @@
 CALL_METHOD
-    Address("component_sim1czjxt2hcg483frrsgq58lh4f9zs84ck3zn6mf6pch32c3744ezhnfa")
+    Address("account_sim1cxaxx4r08ns6shmf4ys086c2jkprnlrmxh06w2k25l3wd39kdef8rc")
+    "create_proof_of_non_fungibles"
+    Address("resource_sim1ng2rshvzek2f9hwyynqx9ajj8x9spycg555ze5hqhcszlutmsrmyfl")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{5bbf7ed683eeabc2-c6dfcd0800a833bb-240fe6bf0e5b2b38-c7e92e5850463c9e}")
+    )
+;
+POP_FROM_AUTH_ZONE
+    Proof("collection_owner_badge")
+;
+CALL_METHOD
+    Address("component_sim1cp35s60muy5uw94j0qwet50eyp4sg3w0ctqqx3nxh8a3258rqwr22g")
     "new_collection_component"
-    "user_identity_id"
     "Kansuler"
     "kansuler"
     "collection_id"
+    Proof("collection_owner_badge")
 ;
 CALL_METHOD
-    Address("account_sim1c989jy49pv5xwyfn0d6q6kmaqvds26zukecmku68nrwp2nljwlvx9p")
+    Address("account_sim1cxaxx4r08ns6shmf4ys086c2jkprnlrmxh06w2k25l3wd39kdef8rc")
     "deposit_batch"
     Expression("ENTIRE_WORKTOP")
 ;

@@ -7,7 +7,7 @@ use scrypto::prelude::*;
 mod repository {
     enable_package_royalties! {
         new => Free;
-        new_collection_component => Xrd(20.into());
+        new_collection_component => Xrd(50.into());
         update_base_path => Free;
         update_royalty_amount => Free;
     }
@@ -31,23 +31,27 @@ mod repository {
         minter_badge_manager: ResourceManager,
 
         // The owner badge resource address used to set ownership of sub components.
-        owner_badge_resource_address: ResourceAddress,
+        repository_owner_access_badge_address: ResourceAddress,
 
         // Set the royalty amount on new collections.
         royalty_amount: Decimal,
     }
 
     impl Repository {
-        pub fn new(base_path: String, owner_badge: ResourceAddress) -> Global<Repository> {
+        pub fn new(
+            base_path: String,
+            repository_owner_access_badge_address: ResourceAddress,
+        ) -> Global<Repository> {
             let (address_reservation, component_address) =
                 Runtime::allocate_component_address(Repository::blueprint_id());
 
             // Setup owner badge access rule
-            let owner_badge_access_rule: AccessRule = rule!(require(owner_badge));
+            let repository_owner_badge_access_rule: AccessRule =
+                rule!(require(repository_owner_access_badge_address));
 
             // Creating an admin badge for the admin role
             let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(
-                owner_badge_access_rule.clone(),
+                repository_owner_badge_access_rule.clone(),
             ))
             .divisibility(DIVISIBILITY_NONE)
             .metadata(metadata!(
@@ -66,7 +70,7 @@ mod repository {
             })
             .create_with_no_initial_supply();
 
-            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::Fixed(owner_badge_access_rule.clone()))
+            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
                 .metadata(metadata!(
                     roles {
                         metadata_setter => rule!(require(global_caller(component_address)));
@@ -78,9 +82,9 @@ mod repository {
                         "name" => "Backeum Trophies", locked;
                         "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
                         "domain" => format!("{}", base_path), updatable;
-                        "icon_url" => format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png"), locked;
+                        "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png")), locked;
                         "tags" => vec!["backeum", "trophy"], locked;
-                        "info_url" => format!("{}", base_path), locked;
+                        "info_url" => UncheckedUrl::of(base_path), locked;
                     }
                 ))
                 .withdraw_roles(withdraw_roles!(
@@ -93,18 +97,18 @@ mod repository {
                 ))
                 .non_fungible_data_update_roles(non_fungible_data_update_roles!(
                     non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
-                    non_fungible_data_updater_updater => owner_badge_access_rule.clone();
+                    non_fungible_data_updater_updater => repository_owner_badge_access_rule.clone();
                 ))
                 .create_with_no_initial_supply();
 
             Self {
                 trophy_resource_manager,
                 minter_badge_manager,
-                owner_badge_resource_address: owner_badge,
+                repository_owner_access_badge_address,
                 royalty_amount: dec!(15),
             }
             .instantiate()
-            .prepare_to_globalize(OwnerRole::Fixed(owner_badge_access_rule.clone()))
+            .prepare_to_globalize(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
             .roles(roles! {
                 trophy_minter => rule!(require(minter_badge_manager.address()));
             })
@@ -118,18 +122,17 @@ mod repository {
         // made by Backeum.
         pub fn new_collection_component(
             &mut self,
-            user_identity: String,
             user_name: String,
             user_slug: String,
             collection_id: String,
-        ) -> (Global<Collection>, Bucket) {
+            collection_owner_badge_proof: Proof,
+        ) -> Global<Collection> {
             let mint_badge = self.minter_badge_manager.mint(1);
             Collection::new(
                 self.trophy_resource_manager,
-                self.owner_badge_resource_address,
-                self.royalty_amount,
+                self.repository_owner_access_badge_address,
+                collection_owner_badge_proof.resource_address(),
                 mint_badge,
-                user_identity,
                 user_name,
                 user_slug,
                 collection_id,
@@ -151,12 +154,12 @@ mod repository {
                     self.trophy_resource_manager.get_non_fungible_data(&nft_id);
 
                 // Generate new image url.
-                data.key_image_url = generate_url(
+                data.key_image_url = UncheckedUrl::of(generate_url(
                     new_base_path.to_string(),
                     data.donated,
                     data.created,
                     data.collection_id,
-                );
+                ));
 
                 // Update image url.
                 self.trophy_resource_manager.update_non_fungible_data(
