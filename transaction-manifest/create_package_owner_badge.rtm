@@ -279,7 +279,7 @@ CALL_FUNCTION
     Enum<0u8>()
 ;
 CALL_METHOD
-    Address("account_sim1cywetnvsd3xuxhrxpa7kn5wvh9ty4z869z3q5f0n4yw3mqsea2ntml")
+    Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")
     "deposit_batch"
     Expression("ENTIRE_WORKTOP")
 ;

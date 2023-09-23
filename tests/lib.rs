@@ -1,4 +1,4 @@
-use donation_component::data::TrophyData;
+use backeum_blueprint::data::Trophy;
 use radix_engine::transaction::TransactionReceipt;
 use scrypto::prelude::*;
 use scrypto_unit::*;
@@ -183,7 +183,7 @@ mod tests {
         repository_component: ComponentAddress,
         owner_account: TestAccount,
         package_address: PackageAddress,
-        package_owner_badge_resource_address: ResourceAddress,
+        // package_owner_badge_resource_address: ResourceAddress,
         package_owner_badge_global_id: NonFungibleGlobalId,
         component_owner_badge_resource_address: ResourceAddress,
         component_owner_badge_global_id: NonFungibleGlobalId,
@@ -395,7 +395,7 @@ mod tests {
                 repository_component,
                 owner_account,
                 package_address,
-                package_owner_badge_resource_address,
+                // package_owner_badge_resource_address,
                 package_owner_badge_global_id,
                 component_owner_badge_resource_address,
                 component_owner_badge_global_id,
@@ -405,7 +405,7 @@ mod tests {
     }
 
     #[test]
-    fn repository_update_base_path() {
+    fn update_base_path() {
         let mut base = TestSetup::new();
 
         // Create an component admin account
@@ -429,7 +429,6 @@ mod tests {
                     (
                         "Kansuler",
                         "kansuler",
-                        "collection_id",
                         lookup.proof("collection_owner_badge"),
                     )
                 },
@@ -449,13 +448,13 @@ mod tests {
         );
 
         // Get the resource address
-        let donation_component = receipt.expect_commit(true).new_component_addresses()[0];
+        let collection_component = receipt.expect_commit(true).new_component_addresses()[0];
 
         // Donate and mint trophy
         let manifest = ManifestBuilder::new()
             .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
@@ -587,7 +586,7 @@ mod tests {
     }
 
     #[test]
-    fn repository_donate_mint_update() {
+    fn donate_and_merge() {
         let mut base = TestSetup::new();
 
         // Create an component admin account
@@ -596,7 +595,7 @@ mod tests {
         let donation_account = TestAccount::new(&mut base.test_runner);
         let donation_account_wrong_nft = TestAccount::new(&mut base.test_runner);
 
-        // Create a donation component
+        // Create two collection components
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
                 collection_admin_account.wallet_address,
@@ -604,16 +603,33 @@ mod tests {
                     .backeum_collection_owner_badge_global_id
                     .clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge")
+            .pop_from_auth_zone("collection_owner_badge_1")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
                 |lookup| {
                     (
-                        "Kansuler",
-                        "kansuler",
-                        "collection_id",
-                        lookup.proof("collection_owner_badge"),
+                        "Kansuler_1",
+                        "kansuler_1",
+                        lookup.proof("collection_owner_badge_1"),
+                    )
+                },
+            )
+            .create_proof_from_account_of_non_fungible(
+                collection_admin_account.wallet_address,
+                collection_admin_account
+                    .backeum_collection_owner_badge_global_id
+                    .clone(),
+            )
+            .pop_from_auth_zone("collection_owner_badge_2")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "new_collection_component",
+                |lookup| {
+                    (
+                        "Kansuler_2",
+                        "kansuler_2",
+                        lookup.proof("collection_owner_badge_2"),
                     )
                 },
             )
@@ -632,14 +648,19 @@ mod tests {
         );
 
         // Get the resource address
-        let donation_component = receipt.expect_commit(true).new_component_addresses()[0];
+        let collection_component_1 = receipt.expect_commit(true).new_component_addresses()[0];
+        let collection_component_2 = receipt.expect_commit(true).new_component_addresses()[1];
 
         // Donate and mint trophy
         let manifest = ManifestBuilder::new()
-            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
-            .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
-                (lookup.bucket("donation_amount"),)
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(200))
+            .take_from_worktop(XRD, dec!(150), "donation_amount_1")
+            .take_from_worktop(XRD, dec!(50), "donation_amount_2")
+            .call_method_with_name_lookup(collection_component_1, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_1"),)
+            })
+            .call_method_with_name_lookup(collection_component_2, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_2"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
             .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
@@ -661,75 +682,85 @@ mod tests {
                 donation_account.wallet_address,
                 base.trophy_resource_address
             ),
-            dec!(1)
+            dec!(2)
         );
         assert_eq!(
             base.test_runner
                 .get_component_balance(donation_account.wallet_address, XRD),
-            dec!(9900)
+            dec!(9800)
         );
         let trophy_vault = base.test_runner.get_component_vaults(
             donation_account.wallet_address,
             base.trophy_resource_address,
         );
-        let trophy_id = base
-            .test_runner
-            .inspect_non_fungible_vault(trophy_vault[0])
-            .unwrap()
-            .1
-            .next()
-            .unwrap();
 
-        let data: TrophyData = base
-            .test_runner
-            .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
+        let trophy_id_1: NonFungibleLocalId;
+        let trophy_id_2: NonFungibleLocalId;
+        {
+            let mut trophies = base
+                .test_runner
+                .inspect_non_fungible_vault(trophy_vault[0])
+                .unwrap()
+                .1;
 
-        assert_eq!(data.name, "Backer Trophy: Kansuler");
+            trophy_id_1 = trophies.next().unwrap().clone();
+            trophy_id_2 = trophies.next().unwrap().clone();
+        }
+        println!("Trophy id 1: {:?}", trophy_id_1);
+        println!("Trophy id 2: {:?}", trophy_id_2);
+
+        let trophy_data_1: Trophy = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id_1.clone());
+
+        let trophy_data_2: Trophy = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id_2.clone());
+
+        assert_ne!(trophy_data_1.collection_id, trophy_data_2.collection_id);
+
+        assert_eq!(trophy_data_1.name, "Backer Trophy: Kansuler_2");
         assert_eq!(
-            data.info_url,
-            UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
+            trophy_data_1.info_url,
+            UncheckedUrl::of("https://localhost:8080/p/kansuler_2".to_owned())
         );
-        assert_eq!(data.created, "1970-01-01");
-        assert_eq!(data.donated, dec!(120));
-        assert_eq!(data.collection_id, "collection_id");
+        assert_eq!(trophy_data_1.created, "1970-01-01");
+        assert_eq!(trophy_data_1.donated, dec!(70));
+
         assert_eq!(
-            data.key_image_url,
-            UncheckedUrl::of(
-                "https://localhost:8080/nft/collection/collection_id?donated=120&created=1970-01-01"
-                    .to_owned()
-            )
+            trophy_data_1.key_image_url,
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/collection/{}?donated=70&created=1970-01-01",
+                trophy_data_1.collection_id
+            ))
         );
 
-        // Get the Non fungible id out of the stack
-        let trophy_vault = base.test_runner.get_component_vaults(
-            donation_account.wallet_address,
-            base.trophy_resource_address,
+        assert_eq!(trophy_data_2.name, "Backer Trophy: Kansuler_1");
+        assert_eq!(
+            trophy_data_2.info_url,
+            UncheckedUrl::of("https://localhost:8080/p/kansuler_1".to_owned())
         );
-        let (amount, _) = base
-            .test_runner
-            .inspect_non_fungible_vault(trophy_vault[0])
-            .unwrap();
-        assert_eq!(amount, dec!(1));
-
-        let trophy_id = base
-            .test_runner
-            .inspect_non_fungible_vault(trophy_vault[0])
-            .unwrap()
-            .1
-            .next()
-            .unwrap();
+        assert_eq!(trophy_data_2.created, "1970-01-01");
+        assert_eq!(trophy_data_2.donated, dec!(170));
+        assert_eq!(
+            trophy_data_2.key_image_url,
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/collection/{}?donated=170&created=1970-01-01",
+                trophy_data_2.collection_id
+            ))
+        );
 
         // Donate and update trophy
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungibles(
                 donation_account.wallet_address,
                 base.trophy_resource_address,
-                btreeset!(trophy_id.clone()),
+                btreeset!(trophy_id_2.clone()),
             )
             .pop_from_auth_zone("trophy")
             .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+            .call_method_with_name_lookup(collection_component_1, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             });
 
@@ -745,36 +776,24 @@ mod tests {
         );
 
         receipt.expect_commit_success();
-        let trophy_vault = base.test_runner.get_component_vaults(
-            donation_account.wallet_address,
-            base.trophy_resource_address,
-        );
-        let trophy_id = base
-            .test_runner
-            .inspect_non_fungible_vault(trophy_vault[0])
-            .unwrap()
-            .1
-            .next()
-            .unwrap();
 
-        let data: TrophyData = base
+        let data: Trophy = base
             .test_runner
-            .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id_2.clone());
 
-        assert_eq!(data.name, "Backer Trophy: Kansuler");
+        assert_eq!(data.name, "Backer Trophy: Kansuler_1");
         assert_eq!(
             data.info_url,
-            UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
+            UncheckedUrl::of("https://localhost:8080/p/kansuler_1".to_owned())
         );
         assert_eq!(data.created, "1970-01-01");
-        assert_eq!(data.donated, dec!(240));
-        assert_eq!(data.collection_id, "collection_id");
+        assert_eq!(data.donated, dec!(290));
         assert_eq!(
             data.key_image_url,
-            UncheckedUrl::of(
-                "https://localhost:8080/nft/collection/collection_id?donated=240&created=1970-01-01"
-                    .to_owned()
-            )
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/collection/{}?donated=290&created=1970-01-01",
+                data.collection_id
+            ))
         );
 
         // Donate and update trophy with the wrong account, should fail, admin_account does not have
@@ -783,12 +802,12 @@ mod tests {
             .create_proof_from_account_of_non_fungibles(
                 collection_admin_account.wallet_address,
                 base.trophy_resource_address,
-                btreeset!(trophy_id.clone()),
+                btreeset!(trophy_id_2.clone()),
             )
             .pop_from_auth_zone("trophy")
             .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+            .call_method_with_name_lookup(collection_component_1, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             });
 
@@ -810,7 +829,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .withdraw_from_account(donation_account_wrong_nft.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+            .call_method_with_name_lookup(collection_component_1, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
@@ -834,12 +853,12 @@ mod tests {
             .create_proof_from_account_of_non_fungibles(
                 donation_account_wrong_nft.wallet_address,
                 base.trophy_resource_address,
-                btreeset!(trophy_id.clone()),
+                btreeset!(trophy_id_2.clone()),
             )
             .pop_from_auth_zone("trophy")
             .withdraw_from_account(donation_account_wrong_nft.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+            .call_method_with_name_lookup(collection_component_1, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             });
 
@@ -854,10 +873,114 @@ mod tests {
             )],
         );
         receipt.expect_commit_failure();
+
+        // Merge multiple trophies into one
+        let manifest = ManifestBuilder::new()
+            .withdraw_non_fungibles_from_account(
+                donation_account.wallet_address,
+                base.trophy_resource_address,
+                btreeset!(trophy_id_1.clone(), trophy_id_2.clone()),
+            )
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(500))
+            .take_from_worktop(XRD, dec!(500), "donation_amount")
+            .call_method_with_name_lookup(collection_component_1, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophies")
+            .call_method_with_name_lookup(base.repository_component, "merge_trophies", |lookup| {
+                (lookup.bucket("trophies"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "new_trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "new_trophy");
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "merge_trophies",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Merge multiple trophies into one
+        let manifest = ManifestBuilder::new()
+            .withdraw_non_fungibles_from_account(
+                donation_account.wallet_address,
+                base.trophy_resource_address,
+                btreeset!(trophy_id_2.clone()),
+            )
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(1000))
+            .take_from_worktop(XRD, dec!(700), "donation_amount_1")
+            .call_method_with_name_lookup(collection_component_1, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_1"),)
+            })
+            .take_from_worktop(XRD, dec!(300), "donation_amount_2")
+            .call_method_with_name_lookup(collection_component_1, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_2"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophies")
+            .call_method_with_name_lookup(base.repository_component, "merge_trophies", |lookup| {
+                (lookup.bucket("trophies"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "new_trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "new_trophy");
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "merge_trophies",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+
+        let trophy_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+
+        let trophy_id_3: NonFungibleLocalId;
+        {
+            let (length, mut trophies) = base
+                .test_runner
+                .inspect_non_fungible_vault(trophy_vault[0])
+                .unwrap();
+
+            assert_eq!(length, dec!(2));
+
+            trophy_id_3 = trophies.next().unwrap().clone();
+        }
+
+        let data: Trophy = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id_3.clone());
+
+        assert_eq!(data.name, "Backer Trophy: Kansuler_1");
+        assert_eq!(
+            data.info_url,
+            UncheckedUrl::of("https://localhost:8080/p/kansuler_1".to_owned())
+        );
+        assert_eq!(data.created, "1970-01-01");
+        assert_eq!(data.donated, dec!(1330));
+        assert_eq!(
+            data.key_image_url,
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/collection/{}?donated=1330&created=1970-01-01",
+                data.collection_id
+            ))
+        );
     }
 
     #[test]
-    fn donation_withdraw_donations() {
+    fn withdraw_donations() {
         let mut base = TestSetup::new();
 
         // Create an component admin account
@@ -873,7 +996,7 @@ mod tests {
                     .backeum_collection_owner_badge_global_id
                     .clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge")
+            .pop_from_auth_zone("collection_admin_badge")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
@@ -881,12 +1004,10 @@ mod tests {
                     (
                         "Kansuler",
                         "kansuler",
-                        "collection_id",
-                        lookup.proof("collection_owner_badge"),
+                        lookup.proof("collection_admin_badge"),
                     )
                 },
-            )
-            .deposit_batch(collection_admin_account.wallet_address);
+            );
 
         // Execute it
         let receipt = Execute::execute_manifest_ignoring_fee(
@@ -902,13 +1023,13 @@ mod tests {
 
         // Get the resource address
         let result = receipt.expect_commit(true);
-        let donation_component = result.new_component_addresses()[0];
+        let collection_component = result.new_component_addresses()[0];
 
         // Donate and mint trophy with the no access account
         let manifest = ManifestBuilder::new()
             .withdraw_from_account(no_access_account.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
@@ -940,7 +1061,7 @@ mod tests {
         );
         let rdx_vaults = base
             .test_runner
-            .get_component_vaults(donation_component, XRD)[0];
+            .get_component_vaults(collection_component, XRD)[0];
         assert_eq!(
             base.test_runner.inspect_vault_balance(rdx_vaults),
             Some(dec!(100))
@@ -952,7 +1073,7 @@ mod tests {
                 no_access_account.wallet_address,
                 no_access_account.backeum_collection_owner_badge_global_id,
             )
-            .call_method(donation_component, "withdraw_donations", manifest_args!())
+            .call_method(collection_component, "withdraw_donations", manifest_args!())
             .deposit_batch(no_access_account.wallet_address);
 
         let receipt = Execute::execute_manifest_ignoring_fee(
@@ -970,7 +1091,7 @@ mod tests {
 
         // Attempt to withdraw donations without any proof
         let manifest = ManifestBuilder::new()
-            .call_method(donation_component, "withdraw_donations", manifest_args!())
+            .call_method(collection_component, "withdraw_donations", manifest_args!())
             .deposit_batch(no_access_account.wallet_address);
 
         let receipt = Execute::execute_manifest_ignoring_fee(
@@ -994,7 +1115,7 @@ mod tests {
                     .backeum_collection_owner_badge_global_id
                     .clone(),
             )
-            .call_method(donation_component, "withdraw_donations", manifest_args!())
+            .call_method(collection_component, "withdraw_donations", manifest_args!())
             .deposit_batch(collection_admin_account.wallet_address);
 
         let receipt = Execute::execute_manifest_ignoring_fee(
@@ -1018,7 +1139,7 @@ mod tests {
 
         let rdx_vaults = base
             .test_runner
-            .get_component_vaults(donation_component, XRD)[0];
+            .get_component_vaults(collection_component, XRD)[0];
         assert_eq!(
             base.test_runner.inspect_vault_balance(rdx_vaults),
             Some(dec!(0))
@@ -1026,7 +1147,7 @@ mod tests {
     }
 
     #[test]
-    fn repository_claim_royalties() {
+    fn claim_royalties() {
         let mut base = TestSetup::new();
 
         // Create an component admin account
@@ -1050,7 +1171,6 @@ mod tests {
                     (
                         "Kansuler",
                         "kansuler",
-                        "collection_id",
                         lookup.proof("collection_owner_badge"),
                     )
                 },
@@ -1069,6 +1189,8 @@ mod tests {
             )],
         );
 
+        receipt.expect_commit_success();
+
         assert_eq!(
             base.test_runner
                 .inspect_package_royalty(base.package_address)
@@ -1077,14 +1199,14 @@ mod tests {
         );
 
         // Get the resource address
-        let donation_component = receipt.expect_commit(true).new_component_addresses()[0];
+        let collection_component = receipt.expect_commit(true).new_component_addresses()[0];
 
         // Donate and mint trophy
         let manifest = ManifestBuilder::new()
             .lock_fee(donation_account.wallet_address, 100)
             .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_mint", |lookup| {
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
                 (lookup.bucket("donation_amount"),)
             })
             .take_all_from_worktop(base.trophy_resource_address, "trophy")
@@ -1139,7 +1261,7 @@ mod tests {
             .pop_from_auth_zone("trophy")
             .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
             .take_from_worktop(XRD, dec!(100), "donation_amount")
-            .call_method_with_name_lookup(donation_component, "donate_update", |lookup| {
+            .call_method_with_name_lookup(collection_component, "donate_update", |lookup| {
                 (lookup.bucket("donation_amount"), lookup.proof("trophy"))
             });
 
@@ -1210,5 +1332,211 @@ mod tests {
                 .get_component_balance(base.owner_account.wallet_address, XRD),
             dec!(10090)
         );
+    }
+
+    #[test]
+    fn close_collection() {
+        let mut base = TestSetup::new();
+
+        // Create an component admin account
+        let collection_admin_account = TestAccount::new(&mut base.test_runner);
+        // Create an component admin account for testing auth
+        let collection_admin_account_wrong_badge = TestAccount::new(&mut base.test_runner);
+        // Create donation account
+        let donation_account = TestAccount::new(&mut base.test_runner);
+
+        // Create a collection component
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungible(
+                collection_admin_account.wallet_address,
+                collection_admin_account
+                    .backeum_collection_owner_badge_global_id
+                    .clone(),
+            )
+            .pop_from_auth_zone("collection_owner_badge")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "new_collection_component",
+                |lookup| {
+                    (
+                        "Kansuler",
+                        "kansuler",
+                        lookup.proof("collection_owner_badge"),
+                    )
+                },
+            );
+
+        // Execute the manifest.
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "instantiate_new_collection_component",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &collection_admin_account.public_key,
+            )],
+        );
+
+        // Get the resource address
+        let collection_component = receipt.expect_commit(true).new_component_addresses()[0];
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+
+        let trophy_id: NonFungibleLocalId;
+        {
+            // Get the Non fungible id out of the stack
+            let trophy_vault = base.test_runner.get_component_vaults(
+                donation_account.wallet_address,
+                base.trophy_resource_address,
+            );
+            let (amount, mut trophies) = base
+                .test_runner
+                .inspect_non_fungible_vault(trophy_vault[0])
+                .unwrap();
+            assert_eq!(amount, dec!(1));
+
+            trophy_id = trophies.next().unwrap();
+        }
+
+        // Close the collection wrong badge
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungible(
+                collection_admin_account_wrong_badge.wallet_address,
+                collection_admin_account_wrong_badge
+                    .backeum_collection_owner_badge_global_id
+                    .clone(),
+            )
+            .call_method(collection_component, "close_collection", manifest_args!());
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &collection_admin_account_wrong_badge.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Close the collection
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungible(
+                collection_admin_account.wallet_address,
+                collection_admin_account
+                    .backeum_collection_owner_badge_global_id
+                    .clone(),
+            )
+            .call_method(collection_component, "close_collection", manifest_args!());
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "close_collection",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &collection_admin_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_success();
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .take_all_from_worktop(base.trophy_resource_address, "trophy")
+            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
+
+        // Donate and update trophy
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungibles(
+                donation_account.wallet_address,
+                base.trophy_resource_address,
+                btreeset!(trophy_id.clone()),
+            )
+            .pop_from_auth_zone("trophy")
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(100))
+            .take_from_worktop(XRD, dec!(100), "donation_amount")
+            .call_method_with_name_lookup(collection_component, "donate_update", |lookup| {
+                (lookup.bucket("donation_amount"), lookup.proof("trophy"))
+            });
+
+        let receipt = Execute::execute_manifest_ignoring_fee(
+            &mut base.test_runner,
+            manifest.object_names(),
+            manifest.build(),
+            "donation_update",
+            &NetworkDefinition::simulator(),
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+        );
+
+        receipt.expect_commit_failure();
     }
 }

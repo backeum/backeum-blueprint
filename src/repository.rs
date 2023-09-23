@@ -1,12 +1,14 @@
 use crate::collection::collection::Collection;
-use crate::collection::generate_url;
-use crate::data::TrophyData;
+use crate::data::Trophy;
+use crate::util::*;
 use scrypto::prelude::*;
 
 #[blueprint]
+#[types(Trophy)]
 mod repository {
     enable_package_royalties! {
         new => Free;
+        merge_trophies => Free;
         new_collection_component => Xrd(50.into());
         update_base_path => Free;
         update_royalty_amount => Free;
@@ -18,6 +20,7 @@ mod repository {
         },
         methods {
             new_collection_component => PUBLIC;
+            merge_trophies => PUBLIC;
             update_base_path => restrict_to: [OWNER];
             update_royalty_amount => restrict_to: [OWNER];
         }
@@ -70,7 +73,7 @@ mod repository {
             })
             .create_with_no_initial_supply();
 
-            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible::<TrophyData>(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
+            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible_with_registered_type::<Trophy>(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
                 .metadata(metadata!(
                     roles {
                         metadata_setter => rule!(require(global_caller(component_address)));
@@ -87,13 +90,13 @@ mod repository {
                         "info_url" => UncheckedUrl::of(base_path), locked;
                     }
                 ))
-                .withdraw_roles(withdraw_roles!(
-                    withdrawer => rule!(deny_all);
-                    withdrawer_updater => rule!(require(global_caller(component_address)));
-                ))
                 .mint_roles(mint_roles!(
-                    minter => rule!(require(minter_badge_manager.address()));
+                    minter => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
                     minter_updater => rule!(require(global_caller(component_address)));
+                ))
+                .burn_roles(burn_roles!(
+                    burner => rule!(require(global_caller(component_address)));
+                    burner_updater => rule!(require(global_caller(component_address)));
                 ))
                 .non_fungible_data_update_roles(non_fungible_data_update_roles!(
                     non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
@@ -124,7 +127,6 @@ mod repository {
             &mut self,
             user_name: String,
             user_slug: String,
-            collection_id: String,
             collection_owner_badge_proof: Proof,
         ) -> Global<Collection> {
             let mint_badge = self.minter_badge_manager.mint(1);
@@ -135,7 +137,6 @@ mod repository {
                 mint_badge,
                 user_name,
                 user_slug,
-                collection_id,
             )
         }
 
@@ -150,8 +151,7 @@ mod repository {
 
             for nft_id in update_nft_ids {
                 // Get data from the Trophy data based on NF id.
-                let mut data: TrophyData =
-                    self.trophy_resource_manager.get_non_fungible_data(&nft_id);
+                let mut data: Trophy = self.trophy_resource_manager.get_non_fungible_data(&nft_id);
 
                 // Generate new image url.
                 data.key_image_url = UncheckedUrl::of(generate_url(
@@ -168,6 +168,72 @@ mod repository {
                     data.key_image_url,
                 );
             }
+        }
+
+        // merge_trophies will take multiple trophies of the same collection id and merge them into
+        // one.
+        pub fn merge_trophies(&mut self, trophies: Bucket) -> Bucket {
+            assert_eq!(
+                trophies.resource_address(),
+                self.trophy_resource_manager.address(),
+                "The given trophies is not the of the same resource type as managed by the repository."
+            );
+
+            let non_fungible_bucket = trophies.as_non_fungible();
+            let trophies_list = non_fungible_bucket.non_fungibles::<Trophy>();
+            let template = trophies_list.first().unwrap().data();
+
+            let mut donated = dec!(0);
+            for trophy_data in trophies_list.iter() {
+                assert_eq!(
+                    trophy_data.data().collection_id,
+                    template.collection_id,
+                    "The given trophies is not the of the same collection id."
+                );
+
+                assert_eq!(
+                    trophy_data.data().info_url,
+                    template.info_url,
+                    "The given trophies is not the of the same created date."
+                );
+
+                assert_eq!(
+                    trophy_data.data().name,
+                    template.name,
+                    "The given trophies is not the of the same created date."
+                );
+
+                donated += trophy_data.data().donated;
+            }
+
+            // Get the domain name used from the trophy resource manager.
+            let domain: String = self
+                .trophy_resource_manager
+                .get_metadata("domain")
+                .unwrap()
+                .expect("No domain on NFT repository");
+
+            let created = generate_created_string();
+            let new_trophy_data = Trophy {
+                name: template.name,
+                info_url: template.info_url,
+                collection_id: template.collection_id.clone(),
+                created: created.clone(),
+                donated: donated.clone(),
+                key_image_url: UncheckedUrl::of(generate_url(
+                    domain.to_string(),
+                    donated,
+                    created,
+                    template.collection_id.clone(),
+                )),
+            };
+
+            trophies.burn();
+
+            let new_trophy = self
+                .trophy_resource_manager
+                .mint_ruid_non_fungible(new_trophy_data.clone());
+            new_trophy
         }
 
         // update_royalty_amount updates the royalty amount for each new collection.

@@ -1,12 +1,12 @@
 CALL_FUNCTION
-    Address("package_sim1phzhvvzxxwcg3w8yn45mhef64gkwp3afphcwv9367cnx25h9pkhj85")
+    Address("package_sim1pkyls09c258rasrvaee89dnapp2male6v6lmh7en5ynmtnavqdsvk9")
     "Repository"
     "new"
     "https://localhost:8080"
-    Address("resource_sim1nfnkwqqnqt8cfnhns58gah77m5xlpqk4fl6q6gg2gqhsk38y6c9p35")
+    Address("resource_sim1nfvfza0ljmme7ztlw6uw76jdwy9tdtc8l46ls9tfntwzj63v6dx96m")
 ;
 CALL_METHOD
-    Address("account_sim1cywetnvsd3xuxhrxpa7kn5wvh9ty4z869z3q5f0n4yw3mqsea2ntml")
+    Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")
     "try_deposit_batch_or_abort"
     Expression("ENTIRE_WORKTOP")
     Enum<0u8>()

@@ -1,25 +1,35 @@
 CALL_METHOD
-    Address("account_sim1c98ghgklanggg8vet9z9lyyxazxuedc8fdek5gwn0lfsdjce00wgnf")
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
     "withdraw"
     Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
-    Decimal("100")
+    Decimal("200")
 ;
 TAKE_FROM_WORKTOP
     Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
-    Decimal("100")
-    Bucket("donation_amount")
+    Decimal("150")
+    Bucket("donation_amount_1")
+;
+TAKE_FROM_WORKTOP
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("50")
+    Bucket("donation_amount_2")
 ;
 CALL_METHOD
-    Address("component_sim1crmw5gzt7tmtpyq24rmw0hrcmmm275gq636fxrfrcemew5t2g9j7t6")
+    Address("component_sim1cr2lh2ankrme3st4xmw8fjk333pzsqd5m4rsma3czczyzfecv4c8mk")
     "donate_mint"
-    Bucket("donation_amount")
+    Bucket("donation_amount_1")
+;
+CALL_METHOD
+    Address("component_sim1cp3wvme6h7dfe22gmvkjf9gvdslepdn00920fme72492663y9lqxnv")
+    "donate_mint"
+    Bucket("donation_amount_2")
 ;
 TAKE_ALL_FROM_WORKTOP
-    Address("resource_sim1nfvahsvnech9t4chdytw26ep7udfw7hq7jyqnsge6yzd6dlqhkd2ws")
+    Address("resource_sim1nfn78rm4nd4d4tsrw5jj9zegl3zml980k264se85am3nshy83u085n")
     Bucket("trophy")
 ;
 CALL_METHOD
-    Address("account_sim1c98ghgklanggg8vet9z9lyyxazxuedc8fdek5gwn0lfsdjce00wgnf")
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
     "try_deposit_or_abort"
     Bucket("trophy")
     Enum<0u8>()

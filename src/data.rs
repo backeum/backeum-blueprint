@@ -1,7 +1,7 @@
 use scrypto::prelude::*;
 
 #[derive(ScryptoSbor, NonFungibleData, Clone)]
-pub struct TrophyData {
+pub struct Trophy {
     pub name: String,
     pub created: String,
     pub info_url: UncheckedUrl,

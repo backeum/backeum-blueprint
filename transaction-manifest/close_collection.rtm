@@ -6,13 +6,7 @@ CALL_METHOD
         NonFungibleLocalId("{5bbf7ed683eeabc2-c6dfcd0800a833bb-240fe6bf0e5b2b38-c7e92e5850463c9e}")
     )
 ;
-POP_FROM_AUTH_ZONE
-    Proof("collection_owner_badge")
-;
 CALL_METHOD
-    Address("component_sim1cqsq96zh6gkeeamu7kgysjacml3x7l808lkusft7rk7zw0c58uvd58")
-    "new_collection_component"
-    "Kansuler"
-    "kansuler"
-    Proof("collection_owner_badge")
+    Address("component_sim1cr2lh2ankrme3st4xmw8fjk333pzsqd5m4rsma3czczyzfecv4c8mk")
+    "close_collection"
 ;

@@ -1,17 +1,17 @@
 CALL_METHOD
-    Address("account_sim1c98ghgklanggg8vet9z9lyyxazxuedc8fdek5gwn0lfsdjce00wgnf")
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
     "create_proof_of_non_fungibles"
-    Address("resource_sim1n2u76qdydgzsu0x6uq27d9zmwnj67lev8j3e7upfccddjp3vgal68g")
+    Address("resource_sim1ng3kpnerw66kcy0gr3n0nzvlpl9mpf9evzf7enkd0l493a9k8kv6ev")
     Array<NonFungibleLocalId>(
         NonFungibleLocalId("{e659d2e6b412b81f-51b0e716be2d7204-9e5bc14163f98e94-bf7138bc52c79db4}")
     )
 ;
 CALL_METHOD
-    Address("component_sim1czy6qr7h35yqpsyddkf3j96yu6a98s3gtfhqyxcugeesheyyk9dmzt")
+    Address("component_sim1crnw4amuggfw0hf4eaf9qjq3aey3qax9ksf8tpyfdn75v3tafpfh38")
     "withdraw_donations"
 ;
 CALL_METHOD
-    Address("account_sim1c98ghgklanggg8vet9z9lyyxazxuedc8fdek5gwn0lfsdjce00wgnf")
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
     "deposit_batch"
     Expression("ENTIRE_WORKTOP")
 ;
