@@ -11,7 +11,6 @@ mod repository {
         merge_trophies => Free;
         new_collection_component => Xrd(50.into());
         update_base_path => Free;
-        update_royalty_amount => Free;
     }
 
     enable_method_auth! {
@@ -22,7 +21,6 @@ mod repository {
             new_collection_component => PUBLIC;
             merge_trophies => PUBLIC;
             update_base_path => restrict_to: [OWNER];
-            update_royalty_amount => restrict_to: [OWNER];
         }
     }
 
@@ -36,14 +34,15 @@ mod repository {
         // The owner badge resource address used to set ownership of sub components.
         repository_owner_access_badge_address: ResourceAddress,
 
-        // Set the royalty amount on new collections.
-        royalty_amount: Decimal,
+        // Dapp definition address
+        dapp_definition_address: GlobalAddress,
     }
 
     impl Repository {
         pub fn new(
             base_path: String,
             repository_owner_access_badge_address: ResourceAddress,
+            dapp_definition_address: GlobalAddress,
         ) -> Global<Repository> {
             let (address_reservation, component_address) =
                 Runtime::allocate_component_address(Repository::blueprint_id());
@@ -52,7 +51,9 @@ mod repository {
             let repository_owner_badge_access_rule: AccessRule =
                 rule!(require(repository_owner_access_badge_address));
 
-            // Creating an admin badge for the admin role
+            // Creating an minter badge for the minter role. This is used to mint trophies both in
+            // this blueprint and in the collection blueprint. The minter badge is handed down to
+            // the collection blueprint via the factory method new_collection_component.
             let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(
                 repository_owner_badge_access_rule.clone(),
             ))
@@ -61,6 +62,7 @@ mod repository {
                 init {
                     "name" => "Trophies Minter", locked;
                     "description" => "Grants authorization to mint NFs from repository", locked;
+                    "dapp_definition" => dapp_definition_address, locked;
                 }
             ))
             .mint_roles(mint_roles! {
@@ -73,6 +75,9 @@ mod repository {
             })
             .create_with_no_initial_supply();
 
+            // Manager for minting trophies for a central collection. This manager will be handed
+            // down to collection components together with a minter badge. This allows all
+            // collections to mint trophies from the same resource manager.
             let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible_with_registered_type::<Trophy>(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
                 .metadata(metadata!(
                     roles {
@@ -88,6 +93,7 @@ mod repository {
                         "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png")), locked;
                         "tags" => vec!["backeum", "trophy"], locked;
                         "info_url" => UncheckedUrl::of(base_path), locked;
+                        "dapp_definition" => dapp_definition_address, locked;
                     }
                 ))
                 .mint_roles(mint_roles!(
@@ -108,10 +114,21 @@ mod repository {
                 trophy_resource_manager,
                 minter_badge_manager,
                 repository_owner_access_badge_address,
-                royalty_amount: dec!(15),
+                dapp_definition_address,
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
+            .metadata(metadata!(
+                roles {
+                    metadata_setter => rule!(require(repository_owner_access_badge_address));
+                    metadata_setter_updater => rule!(deny_all);
+                    metadata_locker => rule!(deny_all);
+                    metadata_locker_updater => rule!(deny_all);
+                },
+                init {
+                    "dapp_definition" => dapp_definition_address, locked;
+                }
+            ))
             .roles(roles! {
                 trophy_minter => rule!(require(minter_badge_manager.address()));
             })
@@ -137,6 +154,7 @@ mod repository {
                 mint_badge,
                 user_name,
                 user_slug,
+                self.dapp_definition_address,
             )
         }
 
@@ -182,6 +200,8 @@ mod repository {
             let non_fungible_bucket = trophies.as_non_fungible();
             let trophies_list = non_fungible_bucket.non_fungibles::<Trophy>();
             let template = trophies_list.first().unwrap().data();
+            let mut earliest_created: UtcDateTime =
+                UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap();
 
             let mut donated = dec!(0);
             for trophy_data in trophies_list.iter() {
@@ -203,6 +223,20 @@ mod repository {
                     "The given trophies is not the of the same created date."
                 );
 
+                println!(
+                    "Trophy created: {}",
+                    parse_created_string(trophy_data.data().created)
+                );
+
+                let trophy_date = parse_created_string(trophy_data.data().created);
+
+                if trophy_date
+                    .to_instant()
+                    .compare(earliest_created.to_instant(), TimeComparisonOperator::Lt)
+                {
+                    earliest_created = trophy_date;
+                }
+
                 donated += trophy_data.data().donated;
             }
 
@@ -213,7 +247,7 @@ mod repository {
                 .unwrap()
                 .expect("No domain on NFT repository");
 
-            let created = generate_created_string();
+            let created = generate_created_string(earliest_created);
             let new_trophy_data = Trophy {
                 name: template.name,
                 info_url: template.info_url,
@@ -223,22 +257,18 @@ mod repository {
                 key_image_url: UncheckedUrl::of(generate_url(
                     domain.to_string(),
                     donated,
-                    created,
+                    created.clone(),
                     template.collection_id.clone(),
                 )),
             };
 
+            // Burn the previous trophies.
             trophies.burn();
 
             let new_trophy = self
                 .trophy_resource_manager
                 .mint_ruid_non_fungible(new_trophy_data.clone());
             new_trophy
-        }
-
-        // update_royalty_amount updates the royalty amount for each new collection.
-        pub fn update_royalty_amount(&mut self, new_royalty_amount: Decimal) {
-            self.royalty_amount = new_royalty_amount;
         }
     }
 }

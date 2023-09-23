@@ -221,6 +221,12 @@ mod tests {
                         .to_owned(),
                 )),
             );
+            package_owner_badge_metadata.insert(
+                "dapp_definitions".to_string(),
+                MetadataValue::GlobalAddressArray(vec![GlobalAddress::new_or_panic(
+                    owner_account.wallet_address.into(),
+                )]),
+            );
 
             let package_owner_badge_metadata = ModuleConfig {
                 init: package_owner_badge_metadata.into(),
@@ -253,6 +259,12 @@ mod tests {
                     "https://staging.backeum.com/bucket/assets/wallet-assets/component-owner-badge.png"
                         .to_owned(),
                 )),
+            );
+            component_owner_badge_metadata.insert(
+                "dapp_definitions".to_string(),
+                MetadataValue::GlobalAddressArray(vec![GlobalAddress::new_or_panic(
+                    owner_account.wallet_address.into(),
+                )]),
             );
 
             let component_owner_badge_metadata = ModuleConfig {
@@ -354,14 +366,15 @@ mod tests {
             );
 
             // Test the repository component via the new function.
-            let manifest2 = ManifestBuilder::new()
+            let manifest = ManifestBuilder::new()
                 .call_function(
                     package_address,
                     "Repository",
                     "new",
                     manifest_args!(
                         "https://localhost:8080",
-                        component_owner_badge_resource_address
+                        component_owner_badge_resource_address,
+                        owner_account.wallet_address,
                     ),
                 )
                 .try_deposit_batch_or_abort(
@@ -371,10 +384,10 @@ mod tests {
                 );
 
             // Execute the manifest.
-            let receipt2 = Execute::execute_manifest_ignoring_fee(
+            let receipt = Execute::execute_manifest_ignoring_fee(
                 &mut test_runner,
-                manifest2.object_names(),
-                manifest2.build(),
+                manifest.object_names(),
+                manifest.build(),
                 "instantiate_new_repository",
                 &NetworkDefinition::simulator(),
                 vec![NonFungibleGlobalId::from_public_key(
@@ -382,13 +395,68 @@ mod tests {
                 )],
             );
 
-            let result2 = receipt2.expect_commit(true);
+            let result = receipt.expect_commit(true);
 
             // Get the repository component address.
-            let repository_component = result2.new_component_addresses()[0];
+            let repository_component = result.new_component_addresses()[0];
+
+            // Minter badge resource address
+            let minter_badge_resource_address = result.new_resource_addresses()[0];
 
             // Get the trophy resource address.
-            let trophy_resource_address = result2.new_resource_addresses()[1];
+            let trophy_resource_address = result.new_resource_addresses()[1];
+
+            // Set metadata on dapp definition
+            let manifest = ManifestBuilder::new()
+                .set_metadata(
+                    owner_account.wallet_address,
+                    "account_type",
+                    MetadataValue::String("dapp definition".to_string()),
+                )
+                .set_metadata(
+                    owner_account.wallet_address,
+                    "claimed_entities",
+                    MetadataValue::GlobalAddressArray(vec![
+                        GlobalAddress::new_or_panic(package_address.into()),
+                        GlobalAddress::new_or_panic(repository_component.into()),
+                        GlobalAddress::new_or_panic(minter_badge_resource_address.into()),
+                        GlobalAddress::new_or_panic(trophy_resource_address.into()),
+                        GlobalAddress::new_or_panic(package_owner_badge_resource_address.into()),
+                        GlobalAddress::new_or_panic(component_owner_badge_resource_address.into()),
+                    ]),
+                )
+                .set_metadata(
+                    owner_account.wallet_address,
+                    "claimed_websites",
+                    MetadataValue::OriginArray(vec![UncheckedOrigin(
+                        "https://staging.backeum.com".to_string(),
+                    )]),
+                )
+                .create_proof_from_account_of_non_fungible(
+                    owner_account.wallet_address,
+                    package_owner_badge_global_id.clone(),
+                )
+                .set_metadata(
+                    package_address,
+                    "dapp_definition",
+                    MetadataValue::GlobalAddress(GlobalAddress::new_or_panic(
+                        owner_account.wallet_address.into(),
+                    )),
+                );
+
+            // Execute the manifest.
+            let receipt = Execute::execute_manifest_ignoring_fee(
+                &mut test_runner,
+                manifest.object_names(),
+                manifest.build(),
+                "set_dapp_account_metadata",
+                &NetworkDefinition::simulator(),
+                vec![NonFungibleGlobalId::from_public_key(
+                    &owner_account.public_key,
+                )],
+            );
+
+            receipt.expect_commit_success();
 
             Self {
                 test_runner,
@@ -703,8 +771,8 @@ mod tests {
                 .unwrap()
                 .1;
 
-            trophy_id_1 = trophies.next().unwrap().clone();
             trophy_id_2 = trophies.next().unwrap().clone();
+            trophy_id_1 = trophies.next().unwrap().clone();
         }
         println!("Trophy id 1: {:?}", trophy_id_1);
         println!("Trophy id 2: {:?}", trophy_id_2);

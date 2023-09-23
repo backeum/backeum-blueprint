@@ -1,16 +1,16 @@
 CALL_METHOD
-    Address("account_sim1c9x97m0s36w0z2qd9rn30l8mt2wqh7va6sjrtk7xn8m2ep0pfec7fh")
+    Address("account_sim1cyeg4he4v4f96mhlq5dqxraadrvku8ulekcks86p00lzjl4uhzxzue")
     "create_proof_of_non_fungibles"
     Address("resource_sim1nfn78rm4nd4d4tsrw5jj9zegl3zml980k264se85am3nshy83u085n")
     Array<NonFungibleLocalId>(
-        NonFungibleLocalId("{faa7069e74130b9e-69d0016ed7f86ef8-236f32a7dbdb5915-1938ecf8b2e14366}")
+        NonFungibleLocalId("{3060f84d2e69a732-16d80550fc24459c-7ace5fa134d1a18e-4e7a4105e6cff85a}")
     )
 ;
 POP_FROM_AUTH_ZONE
     Proof("trophy")
 ;
 CALL_METHOD
-    Address("account_sim1c9x97m0s36w0z2qd9rn30l8mt2wqh7va6sjrtk7xn8m2ep0pfec7fh")
+    Address("account_sim1cyeg4he4v4f96mhlq5dqxraadrvku8ulekcks86p00lzjl4uhzxzue")
     "withdraw"
     Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
     Decimal("100")
@@ -21,7 +21,7 @@ TAKE_FROM_WORKTOP
     Bucket("donation_amount")
 ;
 CALL_METHOD
-    Address("component_sim1cr2lh2ankrme3st4xmw8fjk333pzsqd5m4rsma3czczyzfecv4c8mk")
+    Address("component_sim1crddvntx2dfpsh4d6tamqqnxwr9qnlc3wluwtt43pfej69rjc9045z")
     "donate_update"
     Bucket("donation_amount")
     Proof("trophy")

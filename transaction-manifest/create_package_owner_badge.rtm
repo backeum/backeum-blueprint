@@ -91,6 +91,16 @@ CALL_FUNCTION
     )
     Tuple(
         Map<String, Tuple>(
+            "dapp_definitions" => Tuple(
+                Enum<1u8>(
+                    Enum<136u8>(
+                        Array<Address>(
+                            Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")
+                        )
+                    )
+                ),
+                false
+            ),
             "description" => Tuple(
                 Enum<1u8>(
                     Enum<0u8>(
@@ -231,6 +241,16 @@ CALL_FUNCTION
     )
     Tuple(
         Map<String, Tuple>(
+            "dapp_definitions" => Tuple(
+                Enum<1u8>(
+                    Enum<136u8>(
+                        Array<Address>(
+                            Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")
+                        )
+                    )
+                ),
+                false
+            ),
             "description" => Tuple(
                 Enum<1u8>(
                     Enum<0u8>(

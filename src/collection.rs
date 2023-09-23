@@ -56,6 +56,7 @@ mod collection {
             minter_badge: Bucket,
             user_name: String,
             user_slug: String,
+            dapp_definition_address: GlobalAddress,
         ) -> Global<Collection> {
             let (reservation, address) =
                 Runtime::allocate_component_address(Collection::blueprint_id());
@@ -71,6 +72,17 @@ mod collection {
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::Fixed(rule!(require(repository_owner_badge))))
+            .metadata(metadata!(
+                roles {
+                    metadata_setter => rule!(require(repository_owner_badge));
+                    metadata_setter_updater => rule!(deny_all);
+                    metadata_locker => rule!(deny_all);
+                    metadata_locker_updater => rule!(deny_all);
+                },
+                init {
+                    "dapp_definition" => dapp_definition_address, locked;
+                }
+            ))
             .roles(roles!(
                 owner => rule!(require(collection_owner_badge));
             ))
@@ -78,11 +90,13 @@ mod collection {
             .globalize()
         }
 
-        // donate_mint is a public method, callable by anyone who want to donate to the user.
+        // donate_mint is a public method, callable by anyone who want to donate to the user. In
+        // return they will get a trophy NFT that represents the donation.
         pub fn donate_mint(&mut self, tokens: Bucket) -> Bucket {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
             }
+
             // Push a proof of minter badge to the local auth zone for minting a trophy.
             LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
 
@@ -93,8 +107,12 @@ mod collection {
                 .unwrap()
                 .expect("No domain on NFT repository");
 
-            let created = generate_created_string();
+            let created = generate_created_string(
+                UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap(),
+            );
             let donated = tokens.amount() + 20;
+
+            // Create the trophy data.
             let data = Trophy {
                 name: format!("Backer Trophy: {}", self.user_name),
                 info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.user_slug)),
@@ -109,6 +127,7 @@ mod collection {
                 )),
             };
 
+            // Mint the trophy NFT.
             let trophy = self
                 .trophy_resource_manager
                 .mint_ruid_non_fungible(data.clone());
@@ -124,7 +143,10 @@ mod collection {
                 panic!("This collection is permanently closed.");
             }
 
+            // Push a proof of minter badge to the local auth zone for minting a trophy.
             LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
+
+            // Get the domain name used from the trophy resource manager.
             let domain: String = self
                 .trophy_resource_manager
                 .get_metadata("domain")

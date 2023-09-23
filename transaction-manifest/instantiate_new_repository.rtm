@@ -4,6 +4,7 @@ CALL_FUNCTION
     "new"
     "https://localhost:8080"
     Address("resource_sim1nfvfza0ljmme7ztlw6uw76jdwy9tdtc8l46ls9tfntwzj63v6dx96m")
+    Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")
 ;
 CALL_METHOD
     Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")

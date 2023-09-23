@@ -1,13 +1,13 @@
 CALL_METHOD
-    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    Address("account_sim1cygqk22khlvexwkrn4szchtnv5gf4t6d9gs4ld7dhty6jh853m5pla")
     "create_proof_of_non_fungibles"
-    Address("resource_sim1ng3kpnerw66kcy0gr3n0nzvlpl9mpf9evzf7enkd0l493a9k8kv6ev")
+    Address("resource_sim1nfrr0zdt53tcpwrpcaqny45tzc6ast85h83gsrfxrgywer4dan3hd2")
     Array<NonFungibleLocalId>(
-        NonFungibleLocalId("{e659d2e6b412b81f-51b0e716be2d7204-9e5bc14163f98e94-bf7138bc52c79db4}")
+        NonFungibleLocalId("{b920c94a92484dd4-2974b423875baf69-70556dbe2c54cec9-1cb0d55cea79e864}")
     )
 ;
 CALL_METHOD
-    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    Address("account_sim1cygqk22khlvexwkrn4szchtnv5gf4t6d9gs4ld7dhty6jh853m5pla")
     "create_proof_of_amount"
     Address("resource_sim1nfvfza0ljmme7ztlw6uw76jdwy9tdtc8l46ls9tfntwzj63v6dx96m")
     Decimal("1")
@@ -17,6 +17,6 @@ CALL_METHOD
     "update_base_path"
     "https://some_other_url/nft_image"
     Array<NonFungibleLocalId>(
-        NonFungibleLocalId("{e03621d4f16b49ab-7b8fd1926d97b0cf-eef467ef9042f482-52a8e02bdf33b0ee}")
+        NonFungibleLocalId("{317134ffc915b2cb-b4f88b63cd91bb05-2d25d84717f5d1b1-3df599de9844c2a9}")
     )
 ;

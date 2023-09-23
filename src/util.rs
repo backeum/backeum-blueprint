@@ -14,8 +14,7 @@ pub fn generate_url(
 }
 
 // function to generate the created string with a date format
-pub fn generate_created_string() -> String {
-    let time = UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap();
+pub fn generate_created_string(time: UtcDateTime) -> String {
     let mut month = time.month().to_string();
     match time.month() {
         1 => month = "01".to_owned(),
@@ -43,4 +42,16 @@ pub fn generate_created_string() -> String {
         _ => {}
     }
     format!("{}-{}-{}", time.year(), month, day)
+}
+
+// parse_created_string is a function that makes created string into a UtcDateTime
+pub fn parse_created_string(input: String) -> UtcDateTime {
+    let mut split = input.split('-');
+    let year = split.next().unwrap();
+    let month = split.next().unwrap();
+    let day = split.next().unwrap();
+    let year_int = year.parse::<u32>().unwrap();
+    let month_int = month.parse::<u8>().unwrap();
+    let day_int = day.parse::<u8>().unwrap();
+    UtcDateTime::new(year_int, month_int, day_int, 0, 0, 0).unwrap()
 }
