@@ -253,7 +253,7 @@ mod repository {
                 info_url: template.info_url,
                 collection_id: template.collection_id.clone(),
                 created: created.clone(),
-                donated: donated.clone(),
+                donated,
                 key_image_url: UncheckedUrl::of(generate_url(
                     domain.to_string(),
                     donated,
@@ -265,10 +265,8 @@ mod repository {
             // Burn the previous trophies.
             trophies.burn();
 
-            let new_trophy = self
-                .trophy_resource_manager
-                .mint_ruid_non_fungible(new_trophy_data.clone());
-            new_trophy
+            self.trophy_resource_manager
+                .mint_ruid_non_fungible(new_trophy_data.clone())
         }
     }
 }
