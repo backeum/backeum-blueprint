@@ -1,0 +1,12 @@
+CALL_METHOD
+    Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
+    "create_proof_of_non_fungibles"
+    Address("resource_sim1ngxg6dx52hyx4u3gatzt38efkx98q4mwklj70a9s7ympxjacfsa74z")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{5bbf7ed683eeabc2-c6dfcd0800a833bb-240fe6bf0e5b2b38-c7e92e5850463c9e}")
+    )
+;
+CALL_METHOD
+    Address("component_sim1cpx3wj89ae3x7gctrumzcaq7890zkryfd7xkvhaju4mfffad2xzsuk")
+    "close_collection"
+;

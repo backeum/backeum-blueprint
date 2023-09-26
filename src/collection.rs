@@ -52,7 +52,7 @@ mod collection {
         pub fn new(
             trophy_resource_manager: ResourceManager,
             repository_owner_badge: ResourceAddress,
-            collection_owner_badge: ResourceAddress,
+            collection_owner_badge_proof: CheckedProof,
             minter_badge: Bucket,
             user_name: String,
             user_slug: String,
@@ -61,6 +61,14 @@ mod collection {
             let (reservation, address) =
                 Runtime::allocate_component_address(Collection::blueprint_id());
             let collection_id = Runtime::bech32_encode_address(address);
+
+            let component_owner_badge_global_id = NonFungibleGlobalId::new(
+                collection_owner_badge_proof.resource_address(),
+                collection_owner_badge_proof
+                    .as_non_fungible()
+                    .non_fungible_local_id(),
+            );
+
             Self {
                 minter_badge: Vault::with_bucket(minter_badge),
                 donations: Vault::new(XRD),
@@ -84,7 +92,7 @@ mod collection {
                 }
             ))
             .roles(roles!(
-                owner => rule!(require(collection_owner_badge));
+                owner => rule!(require(component_owner_badge_global_id));
             ))
             .with_address(reservation)
             .globalize()
@@ -95,6 +103,10 @@ mod collection {
         pub fn donate_mint(&mut self, tokens: Bucket) -> Bucket {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
+            }
+
+            if tokens.amount() < dec!(100) {
+                panic!("Minimum donation is 100 XRD");
             }
 
             // Push a proof of minter badge to the local auth zone for minting a trophy.
@@ -141,6 +153,10 @@ mod collection {
         pub fn donate_update(&mut self, tokens: Bucket, proof: Proof) {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
+            }
+
+            if tokens.amount() < dec!(100) {
+                panic!("Minimum donation is 100 XRD");
             }
 
             // Push a proof of minter badge to the local auth zone for minting a trophy.
@@ -199,9 +215,16 @@ mod collection {
         // close_collection is a method for the collection admin to close the collection
         // permanently. This will prevent any further donations to be made to the collection, and
         // will prevent any further minting or updating to the trophies.
-        pub fn close_collection(&mut self) {
+        pub fn close_collection(&mut self) -> Bucket {
+            if self.closed.is_some() {
+                panic!("This collection is permanently closed.");
+            }
+
             self.closed =
                 Some(UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap());
+
+            // Withdraw all remaining donations.
+            self.donations.take_all()
         }
     }
 }

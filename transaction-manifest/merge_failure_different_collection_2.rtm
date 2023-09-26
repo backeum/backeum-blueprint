@@ -1,0 +1,57 @@
+CALL_METHOD
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    "withdraw"
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("500")
+;
+TAKE_FROM_WORKTOP
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("250")
+    Bucket("donation_amount_1")
+;
+CALL_METHOD
+    Address("component_sim1cpkqghhkvs2zvx2tl8xcrpcz20lwprdc8t3298yjcnkqj5wusplvyu")
+    "donate_mint"
+    Bucket("donation_amount_1")
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Decimal("1")
+;
+TAKE_FROM_WORKTOP
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("250")
+    Bucket("donation_amount_2")
+;
+CALL_METHOD
+    Address("component_sim1cru3tvj0fpz4acvg2ksquz99at705chfzm0ap678qzt9l32aqcm76u")
+    "donate_mint"
+    Bucket("donation_amount_2")
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Decimal("2")
+;
+TAKE_ALL_FROM_WORKTOP
+    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Bucket("trophies")
+;
+CALL_METHOD
+    Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
+    "merge_trophies"
+    Bucket("trophies")
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Decimal("1")
+;
+TAKE_ALL_FROM_WORKTOP
+    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Bucket("new_trophy")
+;
+CALL_METHOD
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    "try_deposit_or_abort"
+    Bucket("new_trophy")
+    Enum<0u8>()
+;

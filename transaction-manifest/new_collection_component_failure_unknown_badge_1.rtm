@@ -69,9 +69,9 @@ CALL_FUNCTION
     Array<Tuple>(
         Tuple(
             Tuple(
-                "Owner Badge",
-                "Owner badge for Backeum collections",
-                "https://staging.backeum.com/bucket/assets/wallet-assets/admin-badge.png",
+                "Badge",
+                "Owner badge for packages deployed for Backeum",
+                "https://staging.backeum.com/bucket/assets/wallet-assets/badge.png",
                 "https://staging.backeum.com",
                 Array<String>(
                     "backeum",
@@ -94,7 +94,7 @@ CALL_FUNCTION
             "description" => Tuple(
                 Enum<1u8>(
                     Enum<0u8>(
-                        "Grants collection ownership of Backeum components"
+                        "Grants component ownership of backeum repository and collection components"
                     )
                 ),
                 false
@@ -102,7 +102,7 @@ CALL_FUNCTION
             "icon_url" => Tuple(
                 Enum<1u8>(
                     Enum<13u8>(
-                        "https://staging.backeum.com/bucket/assets/wallet-assets/admin-badge.png"
+                        "https://staging.backeum.com/bucket/assets/wallet-assets/component-owner-badge.png"
                     )
                 ),
                 false
@@ -118,7 +118,7 @@ CALL_FUNCTION
             "name" => Tuple(
                 Enum<1u8>(
                     Enum<0u8>(
-                        "Backeum Collection Owner Badge"
+                        "Backeum Repository Owner Badges"
                     )
                 ),
                 false
@@ -127,8 +127,7 @@ CALL_FUNCTION
                 Enum<1u8>(
                     Enum<128u8>(
                         Array<String>(
-                            "backeum",
-                            "owner"
+                            "backeum"
                         )
                     )
                 ),
@@ -140,7 +139,7 @@ CALL_FUNCTION
     Enum<0u8>()
 ;
 CALL_METHOD
-    Address("account_sim1cyeg4he4v4f96mhlq5dqxraadrvku8ulekcks86p00lzjl4uhzxzue")
+    Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
     "deposit_batch"
     Expression("ENTIRE_WORKTOP")
 ;

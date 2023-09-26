@@ -1,16 +1,16 @@
 use crate::collection::collection::Collection;
-use crate::data::Trophy;
+use crate::data::{CollectionOwnerBadge, Trophy};
 use crate::util::*;
 use scrypto::prelude::*;
 
 #[blueprint]
-#[types(Trophy)]
+#[types(Trophy, CollectionOwnerBadge)]
 mod repository {
     enable_package_royalties! {
         new => Free;
         merge_trophies => Free;
         new_collection_component => Xrd(50.into());
-        update_base_path => Free;
+        new_collection_owner_badge => Free;
     }
 
     enable_method_auth! {
@@ -20,13 +20,16 @@ mod repository {
         methods {
             new_collection_component => PUBLIC;
             merge_trophies => PUBLIC;
-            update_base_path => restrict_to: [OWNER];
+            new_collection_owner_badge => PUBLIC;
         }
     }
 
     struct Repository {
-        // NFT resource address.
+        // NFT resource manager.
         trophy_resource_manager: ResourceManager,
+
+        // Collection owner badge resource manager.
+        collection_owner_badge_manager: ResourceManager,
 
         // Badge for being able to mint trophies.
         minter_badge_manager: ResourceManager,
@@ -62,7 +65,9 @@ mod repository {
                 init {
                     "name" => "Trophies Minter", locked;
                     "description" => "Grants authorization to mint NFs from repository", locked;
-                    "dapp_definition" => dapp_definition_address, locked;
+                    "tags" => vec!["backeum"], locked;
+                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/trophy-minter-badge.png")), locked;
+                    "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                 }
             ))
             .mint_roles(mint_roles! {
@@ -74,6 +79,32 @@ mod repository {
                 withdrawer_updater => rule!(deny_all);
             })
             .create_with_no_initial_supply();
+
+            // Creating an collection owner badge for the trophy collections. This is used to set
+            // ownership of the collection components. The collection owner badge is handed down to
+            // the collection blueprint via the factory method new_collection_component.
+            let collection_owner_badge_manager = ResourceBuilder::new_ruid_non_fungible_with_registered_type::<CollectionOwnerBadge>(OwnerRole::Fixed(
+                repository_owner_badge_access_rule.clone(),
+            ))
+                .metadata(metadata!(
+                init {
+                    "name" => "Backeum Collection Owner Badges", locked;
+                    "description" => "Grants collection ownership of Backeum components", locked;
+                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/collection-owner-badge.png")), locked;
+                    "tags" => vec!["backeum"], locked;
+                    "info_url" => UncheckedUrl::of(base_path.clone()), locked;
+                    "dapp_definition" => dapp_definition_address, locked;
+                }
+                ))
+                .mint_roles(mint_roles! {
+                    minter => rule!(require(global_caller(component_address)));
+                    minter_updater => rule!(deny_all);
+                })
+                .burn_roles(burn_roles!(
+                    burner => rule!(require(global_caller(component_address)));
+                    burner_updater => rule!(require(global_caller(component_address)));
+                ))
+                .create_with_no_initial_supply();
 
             // Manager for minting trophies for a central collection. This manager will be handed
             // down to collection components together with a minter badge. This allows all
@@ -89,10 +120,10 @@ mod repository {
                     init {
                         "name" => "Backeum Trophies", locked;
                         "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
-                        "domain" => format!("{}", base_path), updatable;
+                        "domain" => base_path.clone(), updatable;
                         "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png")), locked;
                         "tags" => vec!["backeum", "trophy"], locked;
-                        "info_url" => UncheckedUrl::of(base_path), locked;
+                        "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                         "dapp_definition" => dapp_definition_address, locked;
                     }
                 ))
@@ -112,6 +143,7 @@ mod repository {
 
             Self {
                 trophy_resource_manager,
+                collection_owner_badge_manager,
                 minter_badge_manager,
                 repository_owner_access_badge_address,
                 dapp_definition_address,
@@ -146,11 +178,14 @@ mod repository {
             user_slug: String,
             collection_owner_badge_proof: Proof,
         ) -> Global<Collection> {
+            let checked_collection_owner_badge_proof =
+                collection_owner_badge_proof.check(self.collection_owner_badge_manager.address());
+
             let mint_badge = self.minter_badge_manager.mint(1);
             Collection::new(
                 self.trophy_resource_manager,
                 self.repository_owner_access_badge_address,
-                collection_owner_badge_proof.resource_address(),
+                checked_collection_owner_badge_proof,
                 mint_badge,
                 user_name,
                 user_slug,
@@ -158,34 +193,14 @@ mod repository {
             )
         }
 
-        // update_base_path updates the base path for each trophy.
-        pub fn update_base_path(
-            &mut self,
-            new_base_path: String,
-            update_nft_ids: Vec<NonFungibleLocalId>,
-        ) {
-            self.trophy_resource_manager
-                .set_metadata("domain", new_base_path.clone());
-
-            for nft_id in update_nft_ids {
-                // Get data from the Trophy data based on NF id.
-                let mut data: Trophy = self.trophy_resource_manager.get_non_fungible_data(&nft_id);
-
-                // Generate new image url.
-                data.key_image_url = UncheckedUrl::of(generate_url(
-                    new_base_path.to_string(),
-                    data.donated,
-                    data.created,
-                    data.collection_id,
-                ));
-
-                // Update image url.
-                self.trophy_resource_manager.update_non_fungible_data(
-                    &nft_id,
-                    "key_image_url",
-                    data.key_image_url,
-                );
-            }
+        // Mints a new collection owner badge that the user can use to gain ownership of a
+        // collection. Ownership badges are free to mint and burn.
+        pub fn new_collection_owner_badge(&mut self) -> Bucket {
+            self.collection_owner_badge_manager
+                .mint_ruid_non_fungible::<CollectionOwnerBadge>(CollectionOwnerBadge {
+                    name: "Collection Owner Badge".to_string(),
+                    description: "Grants ownership of Backeum collection components".to_string(),
+                })
         }
 
         // merge_trophies will take multiple trophies of the same collection id and merge them into
