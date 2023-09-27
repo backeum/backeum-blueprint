@@ -1,4 +1,7 @@
-use crate::{execute_manifest, mint_collection_owner_badge, new_account, new_runner, Nft};
+#[path = "./common.rs"]
+mod common;
+use common::{execute_manifest, mint_collection_owner_badge, new_account, new_runner, Nft};
+
 use backeum_blueprint::data::Trophy;
 use scrypto::prelude::*;
 use transaction::builder::ManifestBuilder;

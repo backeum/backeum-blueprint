@@ -4,19 +4,18 @@ use scrypto_unit::*;
 use transaction::{
     builder::ManifestBuilder, prelude::Secp256k1PrivateKey, prelude::Secp256k1PublicKey,
 };
-mod collection;
-mod dapp_definition;
-mod repository;
 
+#[cfg(test)]
 #[derive(ScryptoSbor, ManifestSbor, NonFungibleData)]
-struct Nft {
-    name: String,
-    description: String,
-    icon_url: UncheckedUrl,
-    info_url: UncheckedUrl,
-    tags: Vec<String>,
+pub struct Nft {
+    pub name: String,
+    pub description: String,
+    pub icon_url: UncheckedUrl,
+    pub info_url: UncheckedUrl,
+    pub tags: Vec<String>,
 }
 
+#[cfg(test)]
 pub fn execute_manifest<T>(
     test_runner: &mut DefaultTestRunner,
     manifest: ManifestBuilder,
@@ -49,12 +48,14 @@ where
     }
 }
 
+#[cfg(test)]
 pub struct Account {
-    public_key: Secp256k1PublicKey,
-    _private_key: Secp256k1PrivateKey,
-    wallet_address: ComponentAddress,
+    pub public_key: Secp256k1PublicKey,
+    pub _private_key: Secp256k1PrivateKey,
+    pub wallet_address: ComponentAddress,
 }
 
+#[cfg(test)]
 pub fn new_account(test_runner: &mut DefaultTestRunner) -> Account {
     let (public_key, _private_key, component_address) = test_runner.new_allocated_account();
     Account {
@@ -64,6 +65,7 @@ pub fn new_account(test_runner: &mut DefaultTestRunner) -> Account {
     }
 }
 
+#[cfg(test)]
 pub fn mint_collection_owner_badge(
     base: &mut TestRunner,
     account: &Account,
@@ -114,17 +116,19 @@ pub fn mint_collection_owner_badge(
     )
 }
 
+#[cfg(test)]
 pub struct TestRunner {
-    test_runner: DefaultTestRunner,
-    repository_component: ComponentAddress,
-    owner_account: Account,
-    package_address: PackageAddress,
-    package_owner_badge_global_id: NonFungibleGlobalId,
-    collection_owner_badge_resource_address: ResourceAddress,
-    repository_owner_badge_global_id: NonFungibleGlobalId,
-    trophy_resource_address: ResourceAddress,
+    pub test_runner: DefaultTestRunner,
+    pub repository_component: ComponentAddress,
+    pub owner_account: Account,
+    pub package_address: PackageAddress,
+    pub package_owner_badge_global_id: NonFungibleGlobalId,
+    pub collection_owner_badge_resource_address: ResourceAddress,
+    pub repository_owner_badge_global_id: NonFungibleGlobalId,
+    pub trophy_resource_address: ResourceAddress,
 }
 
+#[cfg(test)]
 pub fn new_runner() -> TestRunner {
     let mut test_runner = TestRunnerBuilder::new().without_trace().build();
 

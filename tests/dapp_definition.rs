@@ -1,11 +1,13 @@
-use crate::{execute_manifest, new_account, new_runner};
+#[path = "./common.rs"]
+mod common;
+use common::{execute_manifest, mint_collection_owner_badge, new_account, new_runner};
+
 use scrypto::prelude::*;
 use transaction::builder::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::mint_collection_owner_badge;
 
     #[test]
     fn claim_royalties_success() {
