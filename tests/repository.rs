@@ -183,6 +183,82 @@ mod tests {
     }
 
     #[test]
+    fn new_collection_component_and_badge_success() {
+        let mut base = new_runner();
+
+        // Create an component admin account
+        let collection_admin_account = new_account(&mut base.test_runner);
+
+        // Create two collection components
+        let manifest = ManifestBuilder::new()
+            .call_method(
+                base.repository_component,
+                "new_collection_component_and_badge",
+                manifest_args!("Kansuler", "kansuler",),
+            )
+            .assert_worktop_contains(base.collection_owner_badge_resource_address, dec!(1))
+            .deposit_batch(collection_admin_account.wallet_address);
+
+        // Execute it
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "new_collection_component_and_badge_success_1",
+            vec![NonFungibleGlobalId::from_public_key(
+                &collection_admin_account.public_key,
+            )],
+            true,
+        );
+
+        let result = receipt.expect_commit_success();
+
+        let collection_component_address = result.new_component_addresses()[0];
+        let collection_owner_badge_vault = base.test_runner.get_component_vaults(
+            collection_admin_account.wallet_address,
+            base.collection_owner_badge_resource_address,
+        );
+
+        let collection_owner_badge_local_id = base
+            .test_runner
+            .inspect_non_fungible_vault(collection_owner_badge_vault[0])
+            .unwrap()
+            .1
+            .next()
+            .unwrap();
+
+        let collection_owner_badge_global_id = NonFungibleGlobalId::new(
+            base.collection_owner_badge_resource_address,
+            collection_owner_badge_local_id.clone(),
+        );
+
+        // Create two collection components
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungible(
+                collection_admin_account.wallet_address,
+                collection_owner_badge_global_id,
+            )
+            .call_method(
+                collection_component_address,
+                "withdraw_donations",
+                manifest_args!(),
+            )
+            .deposit_batch(collection_admin_account.wallet_address);
+
+        // Execute it
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "new_collection_component_and_badge_success_2",
+            vec![NonFungibleGlobalId::from_public_key(
+                &collection_admin_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_success();
+    }
+
+    #[test]
     fn merge_success() {
         let mut base = new_runner();
 

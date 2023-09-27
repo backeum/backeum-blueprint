@@ -1,0 +1,15 @@
+CALL_METHOD
+    Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
+    "new_collection_component_and_badge"
+    "Kansuler"
+    "kansuler"
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1ngxg6dx52hyx4u3gatzt38efkx98q4mwklj70a9s7ympxjacfsa74z")
+    Decimal("1")
+;
+CALL_METHOD
+    Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP")
+;

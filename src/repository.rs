@@ -10,6 +10,7 @@ mod repository {
         new => Free;
         merge_trophies => Free;
         new_collection_component => Xrd(50.into());
+        new_collection_component_and_badge => Xrd(50.into());
         new_collection_owner_badge => Free;
     }
 
@@ -21,6 +22,7 @@ mod repository {
             new_collection_component => PUBLIC;
             merge_trophies => PUBLIC;
             new_collection_owner_badge => PUBLIC;
+            new_collection_component_and_badge => PUBLIC;
         }
     }
 
@@ -190,6 +192,41 @@ mod repository {
                 user_name,
                 user_slug,
                 self.dapp_definition_address,
+            )
+        }
+
+        // new_collection_component_and_badge sets up a new collection component for a user, and
+        // give that contract a mint badge that allows for it to create and update trophies. By
+        // going through Repository for instantiation we can ensure that the mint badge is only
+        // given to a contract that is made by Backeum. This method also returns the collection
+        // owner badge that the user can use to gain ownership of the collection.
+        pub fn new_collection_component_and_badge(
+            &mut self,
+            user_name: String,
+            user_slug: String,
+        ) -> (Global<Collection>, Bucket) {
+            let badge_bucket = self
+                .collection_owner_badge_manager
+                .mint_ruid_non_fungible::<CollectionOwnerBadge>(CollectionOwnerBadge {
+                    name: "Collection Owner Badge".to_string(),
+                    description: "Grants ownership of Backeum collection components".to_string(),
+                });
+
+            let mint_badge = self.minter_badge_manager.mint(1);
+
+            (
+                Collection::new(
+                    self.trophy_resource_manager,
+                    self.repository_owner_access_badge_address,
+                    badge_bucket
+                        .create_proof_of_all()
+                        .check(self.collection_owner_badge_manager.address()),
+                    mint_badge,
+                    user_name,
+                    user_slug,
+                    self.dapp_definition_address,
+                ),
+                badge_bucket,
             )
         }
 
