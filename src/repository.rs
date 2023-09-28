@@ -68,7 +68,7 @@ mod repository {
                     "name" => "Trophies Minter", locked;
                     "description" => "Grants authorization to mint NFs from repository", locked;
                     "tags" => vec!["backeum"], locked;
-                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/trophy-minter-badge.png")), locked;
+                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/minter.png")), locked;
                     "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                 }
             ))
@@ -92,7 +92,7 @@ mod repository {
                 init {
                     "name" => "Backeum Collection Owner Badges", locked;
                     "description" => "Grants collection ownership of Backeum components", locked;
-                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/collection-owner-badge.png")), locked;
+                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/badge.png")), locked;
                     "tags" => vec!["backeum", "badge"], locked;
                     "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                     "dapp_definition" => dapp_definition_address, locked;
