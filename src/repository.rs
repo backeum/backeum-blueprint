@@ -171,7 +171,7 @@ mod repository {
                     }
                 ))
                 .mint_roles(mint_roles!(
-                    minter => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
+                    minter => rule!(require(minter_badge_manager.address()) || rule!(require(repository_owner_access_badge_address)) || require(global_caller(component_address)));
                     minter_updater => rule!(require(repository_owner_access_badge_address));
                 ))
                 .burn_roles(burn_roles!(
