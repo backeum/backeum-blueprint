@@ -163,7 +163,7 @@ mod repository {
                     init {
                         "name" => "Backeum Thanks Token", locked;
                         "symbol" => "THANKS", locked;
-                        "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
+                        "description" => "Earned by supporting creators on Backeum. This token symbolizes creator gratitude and is redeemable for exclusive rewards. Every $THANKS is a nod to your belief in artistry. Join, support, and reap unique benefits!", locked;
                         "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/thanks-token.png")), updatable;
                         "tags" => vec!["backeum", "token", "redeemable"], locked;
                         "info_url" => UncheckedUrl::of(base_path.clone()), locked;
