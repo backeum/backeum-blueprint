@@ -5,22 +5,16 @@ use scrypto::prelude::*;
 #[blueprint]
 #[types(Trophy)]
 mod collection {
-    enable_package_royalties! {
-        new => Free;
-        donate_mint => Xrd(20.into());
-        donate_update => Xrd(20.into());
-        withdraw_donations => Free;
-        close_collection => Free;
-    }
-
     enable_method_auth! {
         roles {
+            repository_owner => updatable_by: [];
             owner => updatable_by: [];
         },
         methods {
             donate_mint => PUBLIC;
             donate_update => PUBLIC;
             withdraw_donations => restrict_to: [owner];
+            withdraw_fees => restrict_to: [repository_owner];
             close_collection => restrict_to: [owner];
         }
     }
@@ -29,11 +23,17 @@ mod collection {
         // Mints a proof that is used as proof of donated value to the NFT repository.
         trophy_resource_manager: ResourceManager,
 
+        // Mints a proof that is used as proof of donated value to the NFT repository.
+        thanks_token_resource_manager: ResourceManager,
+
         // NFT minter badge
         minter_badge: Vault,
 
         // Collected donations
         donations: Vault,
+
+        // Fees for the donations
+        fees: Vault,
 
         // Specific user name that owns this component
         user_name: String,
@@ -51,6 +51,7 @@ mod collection {
     impl Collection {
         pub fn new(
             trophy_resource_manager: ResourceManager,
+            thanks_token_resource_manager: ResourceManager,
             repository_owner_badge: ResourceAddress,
             collection_owner_badge_proof: CheckedProof,
             minter_badge: Bucket,
@@ -72,10 +73,12 @@ mod collection {
             Self {
                 minter_badge: Vault::with_bucket(minter_badge),
                 donations: Vault::new(XRD),
+                fees: Vault::new(XRD),
                 user_name,
                 user_slug,
                 collection_id,
                 trophy_resource_manager,
+                thanks_token_resource_manager,
                 closed: None,
             }
             .instantiate()
@@ -92,6 +95,7 @@ mod collection {
                 }
             ))
             .roles(roles!(
+                repository_owner => rule!(require(repository_owner_badge));
                 owner => rule!(require(component_owner_badge_global_id));
             ))
             .with_address(reservation)
@@ -100,7 +104,7 @@ mod collection {
 
         // donate_mint is a public method, callable by anyone who want to donate to the user. In
         // return they will get a trophy NFT that represents the donation.
-        pub fn donate_mint(&mut self, tokens: Bucket) -> Bucket {
+        pub fn donate_mint(&mut self, mut tokens: Bucket) -> (Bucket, Bucket) {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
             }
@@ -122,7 +126,7 @@ mod collection {
             let created = generate_created_string(
                 UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap(),
             );
-            let donated = tokens.amount() + 20;
+            let donated = tokens.amount();
 
             // Create the trophy data.
             let data = Trophy {
@@ -144,13 +148,19 @@ mod collection {
                 .trophy_resource_manager
                 .mint_ruid_non_fungible(data.clone());
 
+            // Mint thanks tokens equal to the donated amount.
+            let thanks = self.thanks_token_resource_manager.mint(tokens.amount());
+
+            // Take fees from the donation.
+            self.fees.put(tokens.take(tokens.amount() * dec!(0.03)));
+
             // Take all tokens, and return trophy.
             self.donations.put(tokens);
-            trophy
+            (trophy, thanks)
         }
 
         // donate is a public method, callable by anyone who want to donate to the user.
-        pub fn donate_update(&mut self, tokens: Bucket, proof: Proof) {
+        pub fn donate_update(&mut self, mut tokens: Bucket, proof: Proof) -> Bucket {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
             }
@@ -186,7 +196,6 @@ mod collection {
 
             // Generate new data based on the updated donation value.
             data.donated += tokens.amount();
-            data.donated += 20;
             data.key_image_url = UncheckedUrl::of(generate_url(
                 domain.to_string(),
                 data.donated,
@@ -203,13 +212,25 @@ mod collection {
                 data.key_image_url,
             );
 
+            // Mint thanks tokens equal to the donated amount.
+            let thanks = self.thanks_token_resource_manager.mint(tokens.amount());
+
+            // Take fees from the donation.
+            self.fees.put(tokens.take(tokens.amount() * dec!(0.02)));
+
             // Take all tokens, and return trophy.
             self.donations.put(tokens);
+            thanks
         }
 
         // withdraw_donations is a method for the admin to withdraw all donations.
         pub fn withdraw_donations(&mut self) -> Bucket {
             self.donations.take_all()
+        }
+
+        // withdraw_fees is a method for the repository owner to withdraw all fees.
+        pub fn withdraw_fees(&mut self) -> Bucket {
+            self.fees.take_all()
         }
 
         // close_collection is a method for the collection admin to close the collection

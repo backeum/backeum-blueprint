@@ -66,8 +66,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(150))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,
@@ -126,12 +126,12 @@ mod tests {
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
         assert_eq!(trophy_data.created, "1970-01-01");
-        assert_eq!(trophy_data.donated, dec!(170));
+        assert_eq!(trophy_data.donated, dec!(150));
 
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=170&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=150&created=1970-01-01",
                 trophy_data.collection_id
             ))
         );
@@ -193,8 +193,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(0))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,
@@ -297,8 +297,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(150))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,
@@ -381,8 +381,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(150))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,
@@ -433,7 +433,7 @@ mod tests {
         assert_eq!(
             base.test_runner
                 .get_component_balance(collection_admin_account.wallet_address, XRD),
-            dec!(10150)
+            dec!(10145.5)
         );
 
         let donation_account = new_account(&mut base.test_runner);
@@ -445,8 +445,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(100))
+            .deposit_batch(donation_account.wallet_address);
 
         // Execute it
         let receipt = execute_manifest(
@@ -672,8 +672,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(150))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,

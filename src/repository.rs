@@ -12,6 +12,7 @@ mod repository {
         new_collection_component => Xrd(50.into());
         new_collection_component_and_badge => Xrd(50.into());
         new_collection_owner_badge => Free;
+        redeem_thanks_token => Free;
     }
 
     enable_method_auth! {
@@ -23,12 +24,16 @@ mod repository {
             merge_trophies => PUBLIC;
             new_collection_owner_badge => PUBLIC;
             new_collection_component_and_badge => PUBLIC;
+            redeem_thanks_token => PUBLIC;
         }
     }
 
     struct Repository {
         // NFT resource manager.
         trophy_resource_manager: ResourceManager,
+
+        // Thanks token resource manager.
+        thanks_token_resource_manager: ResourceManager,
 
         // Collection owner badge resource manager.
         collection_owner_badge_manager: ResourceManager,
@@ -52,22 +57,18 @@ mod repository {
             let (address_reservation, component_address) =
                 Runtime::allocate_component_address(Repository::blueprint_id());
 
-            // Setup owner badge access rule
-            let repository_owner_badge_access_rule: AccessRule =
-                rule!(require(repository_owner_access_badge_address));
-
             // Creating an minter badge for the minter role. This is used to mint trophies both in
             // this blueprint and in the collection blueprint. The minter badge is handed down to
             // the collection blueprint via the factory method new_collection_component.
             let minter_badge_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(
-                repository_owner_badge_access_rule.clone(),
+                rule!(require(repository_owner_access_badge_address)),
             ))
             .divisibility(DIVISIBILITY_NONE)
             .metadata(metadata!(
                 init {
                     "name" => "Trophies Minter", locked;
                     "description" => "Grants authorization to mint NFs from repository", locked;
-                    "tags" => vec!["backeum"], locked;
+                    "tags" => vec!["backeum", "badge"], locked;
                     "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/minter.png")), locked;
                     "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                 }
@@ -86,13 +87,13 @@ mod repository {
             // ownership of the collection components. The collection owner badge is handed down to
             // the collection blueprint via the factory method new_collection_component.
             let collection_owner_badge_manager = ResourceBuilder::new_ruid_non_fungible_with_registered_type::<CollectionOwnerBadge>(OwnerRole::Fixed(
-                repository_owner_badge_access_rule.clone(),
+                rule!(require(repository_owner_access_badge_address))
             ))
                 .metadata(metadata!(
                 init {
                     "name" => "Backeum Collection Owner Badges", locked;
                     "description" => "Grants collection ownership of Backeum components", locked;
-                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/badge.png")), locked;
+                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/badge.png")), updatable;
                     "tags" => vec!["backeum", "badge"], locked;
                     "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                     "dapp_definition" => dapp_definition_address, locked;
@@ -111,11 +112,13 @@ mod repository {
             // Manager for minting trophies for a central collection. This manager will be handed
             // down to collection components together with a minter badge. This allows all
             // collections to mint trophies from the same resource manager.
-            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible_with_registered_type::<Trophy>(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
+            let trophy_resource_manager = ResourceBuilder::new_ruid_non_fungible_with_registered_type::<Trophy>(OwnerRole::Fixed(
+                rule!(require(repository_owner_access_badge_address))
+            ))
                 .metadata(metadata!(
                     roles {
-                        metadata_setter => rule!(require(global_caller(component_address)));
-                        metadata_setter_updater => rule!(deny_all);
+                        metadata_setter => rule!(require(repository_owner_access_badge_address) || require(global_caller(component_address)));
+                        metadata_setter_updater => rule!(require(repository_owner_access_badge_address));
                         metadata_locker => rule!(deny_all);
                         metadata_locker_updater => rule!(deny_all);
                     },
@@ -123,7 +126,7 @@ mod repository {
                         "name" => "Backeum Trophies", locked;
                         "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
                         "domain" => base_path.clone(), updatable;
-                        "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png")), locked;
+                        "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/trophy.png")), updatable;
                         "tags" => vec!["backeum", "trophy"], locked;
                         "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                         "dapp_definition" => dapp_definition_address, locked;
@@ -131,31 +134,68 @@ mod repository {
                 ))
                 .mint_roles(mint_roles!(
                     minter => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
-                    minter_updater => rule!(require(global_caller(component_address)));
+                    minter_updater => rule!(require(repository_owner_access_badge_address));
                 ))
                 .burn_roles(burn_roles!(
                     burner => rule!(require(global_caller(component_address)));
-                    burner_updater => rule!(require(global_caller(component_address)));
+                    burner_updater => rule!(require(repository_owner_access_badge_address));
                 ))
                 .non_fungible_data_update_roles(non_fungible_data_update_roles!(
                     non_fungible_data_updater => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
-                    non_fungible_data_updater_updater => repository_owner_badge_access_rule.clone();
+                    non_fungible_data_updater_updater => rule!(require(repository_owner_access_badge_address));
+                ))
+                .create_with_no_initial_supply();
+
+            // Thanks token is a fungible token that is used to thank backers. It is minted by
+            // backing an NFT collection made by a creator. This manager will be handed down to
+            // collection components together with a minter badge. This allows all collections to
+            // mint and burn thanks tokens from the same resource manager.
+            let thanks_token_resource_manager = ResourceBuilder::new_fungible(OwnerRole::Fixed(
+                rule!(require(repository_owner_access_badge_address))
+            ))
+                .metadata(metadata!(
+                    roles {
+                        metadata_setter => rule!(require(repository_owner_access_badge_address) || require(global_caller(component_address)));
+                        metadata_setter_updater => rule!(require(repository_owner_access_badge_address));
+                        metadata_locker => rule!(deny_all);
+                        metadata_locker_updater => rule!(deny_all);
+                    },
+                    init {
+                        "name" => "Backeum Thanks Token", locked;
+                        "symbol" => "THANKS", locked;
+                        "description" => "Backeum trophies celebrates the patronage of its holder with donations to individual Backeum creators. A unique symbol of support for the community, it's a vibrant testament to financial encouragement.", locked;
+                        "icon_url" => UncheckedUrl::of(format!("{}{}", base_path, "/bucket/assets/wallet-assets/thanks-token.png")), updatable;
+                        "tags" => vec!["backeum", "token", "redeemable"], locked;
+                        "info_url" => UncheckedUrl::of(base_path.clone()), locked;
+                        "dapp_definition" => dapp_definition_address, locked;
+                    }
+                ))
+                .mint_roles(mint_roles!(
+                    minter => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
+                    minter_updater => rule!(require(repository_owner_access_badge_address));
+                ))
+                .burn_roles(burn_roles!(
+                    burner => rule!(require(minter_badge_manager.address()) || require(global_caller(component_address)));
+                    burner_updater => rule!(require(repository_owner_access_badge_address));
                 ))
                 .create_with_no_initial_supply();
 
             Self {
                 trophy_resource_manager,
+                thanks_token_resource_manager,
                 collection_owner_badge_manager,
                 minter_badge_manager,
                 repository_owner_access_badge_address,
                 dapp_definition_address,
             }
             .instantiate()
-            .prepare_to_globalize(OwnerRole::Fixed(repository_owner_badge_access_rule.clone()))
+            .prepare_to_globalize(OwnerRole::Fixed(
+                rule!(require(repository_owner_access_badge_address))
+            ))
             .metadata(metadata!(
                 roles {
                     metadata_setter => rule!(require(repository_owner_access_badge_address));
-                    metadata_setter_updater => rule!(deny_all);
+                    metadata_setter_updater => rule!(require(repository_owner_access_badge_address));
                     metadata_locker => rule!(deny_all);
                     metadata_locker_updater => rule!(deny_all);
                 },
@@ -186,6 +226,7 @@ mod repository {
             let mint_badge = self.minter_badge_manager.mint(1);
             Collection::new(
                 self.trophy_resource_manager,
+                self.thanks_token_resource_manager,
                 self.repository_owner_access_badge_address,
                 checked_collection_owner_badge_proof,
                 mint_badge,
@@ -217,6 +258,7 @@ mod repository {
             (
                 Collection::new(
                     self.trophy_resource_manager,
+                    self.thanks_token_resource_manager,
                     self.repository_owner_access_badge_address,
                     badge_bucket
                         .create_proof_of_all()
@@ -319,6 +361,11 @@ mod repository {
 
             self.trophy_resource_manager
                 .mint_ruid_non_fungible(new_trophy_data.clone())
+        }
+
+        // redeem_thanks_token is a method for the backers to redeem thanks tokens.
+        pub fn redeem_thanks_token(&mut self, thanks_token: Bucket) {
+            self.thanks_token_resource_manager.burn(thanks_token);
         }
     }
 }

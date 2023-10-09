@@ -105,12 +105,6 @@ mod tests {
                 Some([Nft {
                     name: "Badge".to_owned(),
                     description: "Owner badge for packages deployed for Backeum".to_owned(),
-                    icon_url: UncheckedUrl::of(
-                        "https://staging.backeum.com/bucket/assets/wallet-assets/badge.png"
-                            .to_owned(),
-                    ),
-                    info_url: UncheckedUrl::of("https://staging.backeum.com".to_owned()),
-                    tags: vec!["backeum".to_owned(), "badge".to_owned()],
                 }]),
             )
             .deposit_batch(collection_admin_account.wallet_address);
@@ -324,8 +318,8 @@ mod tests {
                 (lookup.bucket("trophies"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "new_trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "new_trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(500))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,
@@ -383,12 +377,12 @@ mod tests {
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
         assert_eq!(trophy_data.created, "1970-01-01");
-        assert_eq!(trophy_data.donated, dec!(540));
+        assert_eq!(trophy_data.donated, dec!(500));
 
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=540&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=500&created=1970-01-01",
                 trophy_data.collection_id
             ))
         );
@@ -480,8 +474,8 @@ mod tests {
                 (lookup.bucket("trophies"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "new_trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "new_trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(500))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,

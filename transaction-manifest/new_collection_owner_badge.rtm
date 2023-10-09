@@ -7,7 +7,6 @@ ASSERT_WORKTOP_CONTAINS_ANY
 ;
 CALL_METHOD
     Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
-    "try_deposit_batch_or_abort"
+    "deposit_batch"
     Expression("ENTIRE_WORKTOP")
-    Enum<0u8>()
 ;

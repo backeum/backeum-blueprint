@@ -10,9 +10,6 @@ use transaction::{
 pub struct Nft {
     pub name: String,
     pub description: String,
-    pub icon_url: UncheckedUrl,
-    pub info_url: UncheckedUrl,
-    pub tags: Vec<String>,
 }
 
 #[cfg(test)]
@@ -78,11 +75,7 @@ pub fn mint_collection_owner_badge(
             manifest_args!(),
         )
         .assert_worktop_contains_any(base.collection_owner_badge_resource_address)
-        .try_deposit_batch_or_abort(
-            account.wallet_address,
-            ManifestExpression::EntireWorktop,
-            None,
-        );
+        .deposit_batch(account.wallet_address);
 
     // Execute the manifest.
     let receipt = execute_manifest(
@@ -126,6 +119,7 @@ pub struct TestRunner {
     pub collection_owner_badge_resource_address: ResourceAddress,
     pub repository_owner_badge_global_id: NonFungibleGlobalId,
     pub trophy_resource_address: ResourceAddress,
+    pub thanks_token_resource_address: ResourceAddress,
 }
 
 #[cfg(test)]
@@ -155,8 +149,7 @@ pub fn new_runner() -> TestRunner {
     package_owner_badge_metadata.insert(
         "icon_url".to_string(),
         MetadataValue::Url(UncheckedUrl(
-            "https://staging.backeum.com/bucket/assets/wallet-assets/package-owner-badge.png"
-                .to_owned(),
+            "https://staging.backeum.com/bucket/assets/wallet-assets/package.png".to_owned(),
         )),
     );
 
@@ -187,8 +180,7 @@ pub fn new_runner() -> TestRunner {
     repository_owner_badge_metadata.insert(
         "icon_url".to_string(),
         MetadataValue::Url(UncheckedUrl(
-            "https://staging.backeum.com/bucket/assets/wallet-assets/component-owner-badge.png"
-                .to_owned(),
+            "https://staging.backeum.com/bucket/assets/wallet-assets/repository.png".to_owned(),
         )),
     );
 
@@ -207,11 +199,6 @@ pub fn new_runner() -> TestRunner {
             Some([Nft {
                 name: "Badge".to_owned(),
                 description: "Owner badge for packages deployed for Backeum".to_owned(),
-                icon_url: UncheckedUrl::of(
-                    "https://staging.backeum.com/bucket/assets/wallet-assets/badge.png".to_owned(),
-                ),
-                info_url: UncheckedUrl::of("https://staging.backeum.com".to_owned()),
-                tags: vec!["backeum".to_owned(), "badge".to_owned()],
             }]),
         )
         .create_ruid_non_fungible_resource(
@@ -222,11 +209,6 @@ pub fn new_runner() -> TestRunner {
             Some([Nft {
                 name: "Badge".to_owned(),
                 description: "Owner badge for components instantiated on Backeum".to_owned(),
-                icon_url: UncheckedUrl::of(
-                    "https://staging.backeum.com/bucket/assets/wallet-assets/badge.png".to_owned(),
-                ),
-                info_url: UncheckedUrl::of("https://staging.backeum.com".to_owned()),
-                tags: vec!["backeum".to_owned(), "badge".to_owned()],
             }]),
         )
         .deposit_batch(owner_account.wallet_address);
@@ -280,9 +262,26 @@ pub fn new_runner() -> TestRunner {
         repository_owner_badge_id.clone(),
     );
 
-    // Publish package
-    let package_address = test_runner
-        .compile_and_publish_with_owner(this_package!(), package_owner_badge_global_id.clone());
+    // Upload package
+    let (code, definition) = Compile::compile(this_package!());
+    let manifest = ManifestBuilder::new().publish_package_with_owner(
+        code,
+        definition,
+        package_owner_badge_global_id.clone(),
+    );
+
+    // Execute the manifest.
+    let receipt = execute_manifest(
+        &mut test_runner,
+        manifest,
+        "upload_package",
+        vec![NonFungibleGlobalId::from_public_key(
+            &owner_account.public_key,
+        )],
+        true,
+    );
+
+    let package_address = receipt.expect_commit_success().new_package_addresses()[0];
 
     // Test the repository component via the new function.
     let manifest = ManifestBuilder::new()
@@ -296,11 +295,7 @@ pub fn new_runner() -> TestRunner {
                 owner_account.wallet_address,
             ),
         )
-        .try_deposit_batch_or_abort(
-            owner_account.wallet_address,
-            ManifestExpression::EntireWorktop,
-            None,
-        );
+        .deposit_batch(owner_account.wallet_address);
 
     // Execute the manifest.
     let receipt = execute_manifest(
@@ -323,6 +318,9 @@ pub fn new_runner() -> TestRunner {
 
     // Get the trophy resource address.
     let trophy_resource_address = result.new_resource_addresses()[2];
+
+    // Get the thanks token resource address.
+    let thanks_token_resource_address = result.new_resource_addresses()[3];
 
     // Set metadata on dapp definition
     let manifest = ManifestBuilder::new()
@@ -381,5 +379,6 @@ pub fn new_runner() -> TestRunner {
         collection_owner_badge_resource_address,
         repository_owner_badge_global_id,
         trophy_resource_address,
+        thanks_token_resource_address,
     }
 }

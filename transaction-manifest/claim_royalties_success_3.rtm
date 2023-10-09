@@ -9,6 +9,18 @@ CALL_METHOD
 CLAIM_PACKAGE_ROYALTIES
     Address("package_sim1phfks0k2y4eqsudjv40jwpza6z9jhxvrc9dydkzm4pxn8rstryrcuy")
 ;
+CALL_METHOD
+    Address("account_sim1c8m6h4yv2x9ca0wx5ddtl0nctqmjt2t740wfjgj9w8sdz82zf8ppcr")
+    "create_proof_of_non_fungibles"
+    Address("resource_sim1n23l6yg3klc876frr862g3lyn37ls7yzvgjnplh6rwshd0vp57x6pc")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{4c9b6641baefffe3-b1a4c7446570ca10-2efc878bcc67af3a-d62c90b49a958e64}")
+    )
+;
+CALL_METHOD
+    Address("component_sim1cpx3wj89ae3x7gctrumzcaq7890zkryfd7xkvhaju4mfffad2xzsuk")
+    "withdraw_fees"
+;
 ASSERT_WORKTOP_CONTAINS_ANY
     Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
 ;

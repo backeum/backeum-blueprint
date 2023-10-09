@@ -75,8 +75,8 @@ mod tests {
                 (lookup.bucket("donation_amount"),)
             })
             .assert_worktop_contains(base.trophy_resource_address, dec!(1))
-            .take_all_from_worktop(base.trophy_resource_address, "trophy")
-            .try_deposit_or_abort(donation_account.wallet_address, None, "trophy");
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(100))
+            .deposit_batch(donation_account.wallet_address);
 
         let receipt = execute_manifest(
             &mut base.test_runner,
@@ -94,7 +94,7 @@ mod tests {
             base.test_runner
                 .inspect_package_royalty(base.package_address)
                 .unwrap(),
-            dec!(70)
+            dec!(50)
         );
 
         let manifest = ManifestBuilder::new()
@@ -103,6 +103,11 @@ mod tests {
                 base.package_owner_badge_global_id,
             )
             .claim_package_royalties(base.package_address)
+            .create_proof_from_account_of_non_fungible(
+                base.owner_account.wallet_address,
+                base.repository_owner_badge_global_id,
+            )
+            .call_method(collection_component, "withdraw_fees", manifest_args!())
             .assert_worktop_contains_any(XRD)
             .deposit_batch(base.owner_account.wallet_address);
 
@@ -121,7 +126,7 @@ mod tests {
         assert_eq!(
             base.test_runner
                 .get_component_balance(base.owner_account.wallet_address, XRD),
-            dec!(10070)
+            dec!(10053)
         );
     }
 

@@ -18,13 +18,12 @@ ASSERT_WORKTOP_CONTAINS
     Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
     Decimal("1")
 ;
-TAKE_ALL_FROM_WORKTOP
-    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
-    Bucket("trophy")
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1t4xh27qdnm8g5489vrpe298h0hr5tf59ncj056p888amskczv3wag3")
+    Decimal("100")
 ;
 CALL_METHOD
     Address("account_sim1c9zcqnwlqvax740a8rlw2zncsa7qq6j7zl06hecuh2prf7qk9xckdx")
-    "try_deposit_or_abort"
-    Bucket("trophy")
-    Enum<0u8>()
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP")
 ;

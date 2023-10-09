@@ -15,21 +15,7 @@ CALL_FUNCTION
                             ),
                             Enum<0u8>(
                                 12u8
-                            ),
-                            Enum<0u8>(
-                                198u8
-                            ),
-                            Enum<0u8>(
-                                198u8
-                            ),
-                            Enum<1u8>(
-                                1u64
                             )
-                        )
-                    ),
-                    Enum<13u8>(
-                        Enum<0u8>(
-                            12u8
                         )
                     )
                 ),
@@ -42,21 +28,13 @@ CALL_FUNCTION
                             Enum<0u8>(
                                 Array<String>(
                                     "name",
-                                    "description",
-                                    "icon_url",
-                                    "info_url",
-                                    "tags"
+                                    "description"
                                 )
                             )
                         )
-                    ),
-                    Tuple(
-                        Enum<0u8>(),
-                        Enum<0u8>()
                     )
                 ),
                 Array<Enum>(
-                    Enum<0u8>(),
                     Enum<0u8>()
                 )
             )
@@ -70,13 +48,7 @@ CALL_FUNCTION
         Tuple(
             Tuple(
                 "Badge",
-                "Owner badge for packages deployed for Backeum",
-                "https://staging.backeum.com/bucket/assets/wallet-assets/badge.png",
-                "https://staging.backeum.com",
-                Array<String>(
-                    "backeum",
-                    "badge"
-                )
+                "Owner badge for packages deployed for Backeum"
             )
         )
     )
@@ -102,7 +74,7 @@ CALL_FUNCTION
             "icon_url" => Tuple(
                 Enum<1u8>(
                     Enum<13u8>(
-                        "https://staging.backeum.com/bucket/assets/wallet-assets/package-owner-badge.png"
+                        "https://staging.backeum.com/bucket/assets/wallet-assets/package.png"
                     )
                 ),
                 false
@@ -155,21 +127,7 @@ CALL_FUNCTION
                             ),
                             Enum<0u8>(
                                 12u8
-                            ),
-                            Enum<0u8>(
-                                198u8
-                            ),
-                            Enum<0u8>(
-                                198u8
-                            ),
-                            Enum<1u8>(
-                                1u64
                             )
-                        )
-                    ),
-                    Enum<13u8>(
-                        Enum<0u8>(
-                            12u8
                         )
                     )
                 ),
@@ -182,21 +140,13 @@ CALL_FUNCTION
                             Enum<0u8>(
                                 Array<String>(
                                     "name",
-                                    "description",
-                                    "icon_url",
-                                    "info_url",
-                                    "tags"
+                                    "description"
                                 )
                             )
                         )
-                    ),
-                    Tuple(
-                        Enum<0u8>(),
-                        Enum<0u8>()
                     )
                 ),
                 Array<Enum>(
-                    Enum<0u8>(),
                     Enum<0u8>()
                 )
             )
@@ -210,13 +160,7 @@ CALL_FUNCTION
         Tuple(
             Tuple(
                 "Badge",
-                "Owner badge for components instantiated on Backeum",
-                "https://staging.backeum.com/bucket/assets/wallet-assets/badge.png",
-                "https://staging.backeum.com",
-                Array<String>(
-                    "backeum",
-                    "badge"
-                )
+                "Owner badge for components instantiated on Backeum"
             )
         )
     )
@@ -242,7 +186,7 @@ CALL_FUNCTION
             "icon_url" => Tuple(
                 Enum<1u8>(
                     Enum<13u8>(
-                        "https://staging.backeum.com/bucket/assets/wallet-assets/component-owner-badge.png"
+                        "https://staging.backeum.com/bucket/assets/wallet-assets/repository.png"
                     )
                 ),
                 false
