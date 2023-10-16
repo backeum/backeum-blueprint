@@ -13,11 +13,12 @@ mod repository {
         new_collection_component_and_badge => Xrd(50.into());
         new_collection_owner_badge => Free;
         redeem_thanks_token => Free;
+        close_repository => Free;
     }
 
     enable_method_auth! {
         roles {
-            trophy_minter => updatable_by: [OWNER];
+            admin => updatable_by: [OWNER];
         },
         methods {
             new_collection_component => PUBLIC;
@@ -25,6 +26,7 @@ mod repository {
             new_collection_owner_badge => PUBLIC;
             new_collection_component_and_badge => PUBLIC;
             redeem_thanks_token => PUBLIC;
+            close_repository => restrict_to: [admin];
         }
     }
 
@@ -46,6 +48,9 @@ mod repository {
 
         // Dapp definition address
         dapp_definition_address: GlobalAddress,
+
+        // Closed date for the collection
+        closed: Option<UtcDateTime>,
     }
 
     impl Repository {
@@ -171,7 +176,7 @@ mod repository {
                     }
                 ))
                 .mint_roles(mint_roles!(
-                    minter => rule!(require(minter_badge_manager.address()) || rule!(require(repository_owner_access_badge_address)) || require(global_caller(component_address)));
+                    minter => rule!(require(minter_badge_manager.address()) || require(repository_owner_access_badge_address) || require(global_caller(component_address)));
                     minter_updater => rule!(require(repository_owner_access_badge_address));
                 ))
                 .burn_roles(burn_roles!(
@@ -187,6 +192,7 @@ mod repository {
                 minter_badge_manager,
                 repository_owner_access_badge_address,
                 dapp_definition_address,
+                closed: None,
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::Fixed(
@@ -204,7 +210,7 @@ mod repository {
                 }
             ))
             .roles(roles! {
-                trophy_minter => rule!(require(minter_badge_manager.address()));
+                admin => rule!(require(repository_owner_access_badge_address));
             })
             .with_address(address_reservation)
             .globalize()
@@ -220,6 +226,10 @@ mod repository {
             user_slug: String,
             collection_owner_badge_proof: Proof,
         ) -> Global<Collection> {
+            if self.closed.is_some() {
+                panic!("This repository is permanently closed.");
+            }
+
             let checked_collection_owner_badge_proof =
                 collection_owner_badge_proof.check(self.collection_owner_badge_manager.address());
 
@@ -246,6 +256,10 @@ mod repository {
             user_name: String,
             user_slug: String,
         ) -> (Global<Collection>, Bucket) {
+            if self.closed.is_some() {
+                panic!("This repository is permanently closed.");
+            }
+
             let badge_bucket = self
                 .collection_owner_badge_manager
                 .mint_ruid_non_fungible::<CollectionOwnerBadge>(CollectionOwnerBadge {
@@ -366,6 +380,18 @@ mod repository {
         // redeem_thanks_token is a method for the backers to redeem thanks tokens.
         pub fn redeem_thanks_token(&mut self, thanks_token: Bucket) {
             self.thanks_token_resource_manager.burn(thanks_token);
+        }
+
+        // close_repository is a method for the repository admin to close the repository
+        // permanently. This will prevent any further collections to be made from the repository,
+        // and will prevent any further usage of this repository.
+        pub fn close_repository(&mut self) {
+            if self.closed.is_some() {
+                panic!("This repository is permanently closed.");
+            }
+
+            self.closed =
+                Some(UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap());
         }
     }
 }

@@ -109,8 +109,8 @@ mod collection {
                 panic!("This collection is permanently closed.");
             }
 
-            if tokens.amount() < dec!(100) {
-                panic!("Minimum donation is 100 XRD");
+            if tokens.amount() < dec!(50) {
+                panic!("Minimum donation is 50 XRD");
             }
 
             // Push a proof of minter badge to the local auth zone for minting a trophy.
@@ -152,7 +152,7 @@ mod collection {
             let thanks = self.thanks_token_resource_manager.mint(tokens.amount());
 
             // Take fees from the donation.
-            self.fees.put(tokens.take(tokens.amount() * dec!(0.03)));
+            self.fees.put(tokens.take(tokens.amount() * dec!(0.04)));
 
             // Take all tokens, and return trophy.
             self.donations.put(tokens);
@@ -165,8 +165,8 @@ mod collection {
                 panic!("This collection is permanently closed.");
             }
 
-            if tokens.amount() < dec!(100) {
-                panic!("Minimum donation is 100 XRD");
+            if tokens.amount() < dec!(50) {
+                panic!("Minimum donation is 50 XRD");
             }
 
             // Push a proof of minter badge to the local auth zone for minting a trophy.
@@ -216,7 +216,7 @@ mod collection {
             let thanks = self.thanks_token_resource_manager.mint(tokens.amount());
 
             // Take fees from the donation.
-            self.fees.put(tokens.take(tokens.amount() * dec!(0.02)));
+            self.fees.put(tokens.take(tokens.amount() * dec!(0.04)));
 
             // Take all tokens, and return trophy.
             self.donations.put(tokens);

@@ -433,7 +433,7 @@ mod tests {
         assert_eq!(
             base.test_runner
                 .get_component_balance(collection_admin_account.wallet_address, XRD),
-            dec!(10145.5)
+            dec!(10144)
         );
 
         let donation_account = new_account(&mut base.test_runner);

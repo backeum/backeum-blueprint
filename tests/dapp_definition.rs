@@ -126,7 +126,7 @@ mod tests {
         assert_eq!(
             base.test_runner
                 .get_component_balance(base.owner_account.wallet_address, XRD),
-            dec!(10053)
+            dec!(10054)
         );
     }
 
