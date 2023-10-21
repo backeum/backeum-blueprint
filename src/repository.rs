@@ -9,8 +9,8 @@ mod repository {
     enable_package_royalties! {
         new => Free;
         merge_trophies => Free;
-        new_collection_component => Xrd(50.into());
-        new_collection_component_and_badge => Xrd(50.into());
+        new_collection_component => Usd(5.into());
+        new_collection_component_and_badge => Usd(5.into());
         new_collection_owner_badge => Free;
         redeem_thanks_token => Free;
         close_repository => Free;
