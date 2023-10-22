@@ -60,7 +60,7 @@ mod tests {
             base.test_runner
                 .inspect_package_royalty(base.package_address)
                 .unwrap(),
-            dec!(50)
+            dec!(83.33333333333333333)
         );
 
         // Get the resource address
@@ -94,7 +94,7 @@ mod tests {
             base.test_runner
                 .inspect_package_royalty(base.package_address)
                 .unwrap(),
-            dec!(50)
+            dec!(83.33333333333333333)
         );
 
         let manifest = ManifestBuilder::new()
@@ -126,7 +126,7 @@ mod tests {
         assert_eq!(
             base.test_runner
                 .get_component_balance(base.owner_account.wallet_address, XRD),
-            dec!(10054)
+            dec!(10087.33333333333333333)
         );
     }
 
@@ -178,7 +178,7 @@ mod tests {
             base.test_runner
                 .inspect_package_royalty(base.package_address)
                 .unwrap(),
-            dec!(50)
+            dec!(83.33333333333333333)
         );
 
         let manifest = ManifestBuilder::new()

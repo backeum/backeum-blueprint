@@ -148,10 +148,10 @@ PUBLISH_PACKAGE_ADVANCED
                                             12u8
                                         ),
                                         Enum<0u8>(
-                                            198u8
+                                            192u8
                                         ),
                                         Enum<0u8>(
-                                            192u8
+                                            198u8
                                         )
                                     )
                                 )
@@ -301,8 +301,8 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "created",
                                                 "info_url",
                                                 "collection_id",
-                                                "key_image_url",
-                                                "donated"
+                                                "donated",
+                                                "key_image_url"
                                             )
                                         )
                                     )
@@ -658,10 +658,10 @@ PUBLISH_PACKAGE_ADVANCED
                                             12u8
                                         ),
                                         Enum<0u8>(
-                                            198u8
+                                            192u8
                                         ),
                                         Enum<0u8>(
-                                            192u8
+                                            198u8
                                         )
                                     )
                                 )
@@ -833,8 +833,8 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "created",
                                                 "info_url",
                                                 "collection_id",
-                                                "key_image_url",
-                                                "donated"
+                                                "donated",
+                                                "key_image_url"
                                             )
                                         )
                                     )
@@ -1046,11 +1046,11 @@ PUBLISH_PACKAGE_ADVANCED
                 Enum<1u8>(
                     Map<String, Enum>(
                         "new" => Enum<0u8>(),
-                        "new_collection_component" => Enum<1u8>(
-                            Decimal("50")
+                        "new_collection_component" => Enum<2u8>(
+                            Decimal("5")
                         ),
-                        "new_collection_component_and_badge" => Enum<1u8>(
-                            Decimal("50")
+                        "new_collection_component_and_badge" => Enum<2u8>(
+                            Decimal("5")
                         ),
                         "new_collection_owner_badge" => Enum<0u8>(),
                         "merge_trophies" => Enum<0u8>(),
@@ -1087,7 +1087,7 @@ PUBLISH_PACKAGE_ADVANCED
             )
         )
     )
-    Blob("1fd2d86b6795bb6797dbed73c64daf2a18ae7bb535d1207643b56bed40c18951")
+    Blob("4317f2bc28b05c1d3cccf27d2efae2a2db390e593e56def9a9ba7f39185bb8d5")
     Map<String, Tuple>()
     Enum<0u8>()
 ;

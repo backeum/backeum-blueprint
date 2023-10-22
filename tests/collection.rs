@@ -327,6 +327,164 @@ mod tests {
     }
 
     #[test]
+    fn donate_update_success() {
+        let mut base = new_runner();
+
+        // Create an component admin account
+        let collection_admin_account = new_account(&mut base.test_runner);
+        let collection_admin_badge_id: NonFungibleGlobalId;
+        {
+            collection_admin_badge_id =
+                mint_collection_owner_badge(&mut base, &collection_admin_account);
+        }
+
+        // Create donation account
+        let donation_account = new_account(&mut base.test_runner);
+
+        // Create two collection components
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungible(
+                collection_admin_account.wallet_address,
+                collection_admin_badge_id,
+            )
+            .pop_from_auth_zone("collection_owner_badge_proof")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "new_collection_component",
+                |lookup| {
+                    (
+                        "Kansuler",
+                        "kansuler",
+                        lookup.proof("collection_owner_badge_proof"),
+                    )
+                },
+            );
+
+        // Execute it
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "donate_mint_success_1",
+            vec![NonFungibleGlobalId::from_public_key(
+                &collection_admin_account.public_key,
+            )],
+            true,
+        );
+
+        // Get the resource address
+        let collection_component = receipt.expect_commit_success().new_component_addresses()[0];
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(150))
+            .take_from_worktop(XRD, dec!(150), "donation_amount")
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount"),)
+            })
+            .assert_worktop_contains(base.trophy_resource_address, dec!(1))
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(150))
+            .deposit_batch(donation_account.wallet_address);
+
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "donate_mint_success_2",
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_success();
+
+        assert_eq!(
+            base.test_runner.get_component_balance(
+                donation_account.wallet_address,
+                base.trophy_resource_address
+            ),
+            dec!(1)
+        );
+        assert_eq!(
+            base.test_runner
+                .get_component_balance(donation_account.wallet_address, XRD),
+            dec!(9850)
+        );
+
+        let trophy_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+
+        let trophy_id: NonFungibleLocalId;
+        {
+            let mut trophies = base
+                .test_runner
+                .inspect_non_fungible_vault(trophy_vault[0])
+                .unwrap()
+                .1;
+
+            trophy_id = trophies.next().unwrap().clone();
+        }
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(300))
+            .take_from_worktop(XRD, dec!(150), "donation_amount")
+            .create_proof_from_account_of_non_fungible(
+                donation_account.wallet_address,
+                NonFungibleGlobalId::new(base.trophy_resource_address, trophy_id.clone()),
+            )
+            .create_proof_from_auth_zone_of_non_fungibles(
+                base.trophy_resource_address,
+                vec![trophy_id.clone()],
+                "proof",
+            )
+            .call_method_with_name_lookup(collection_component, "donate_update", |lookup| {
+                (lookup.bucket("donation_amount"), lookup.proof("proof"))
+            })
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(150))
+            .deposit_batch(donation_account.wallet_address);
+
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "donate_mint_success_2",
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_success();
+
+        let trophy_data: Trophy = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
+
+        let result = AddressBech32Encoder::new(&NetworkDefinition::simulator())
+            .encode(&collection_component.to_vec())
+            .unwrap();
+
+        assert_eq!(trophy_data.collection_id, result);
+
+        assert_eq!(trophy_data.name, "Backer Trophy: Kansuler");
+        assert_eq!(
+            trophy_data.info_url,
+            UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
+        );
+        assert_eq!(trophy_data.created, "1970-01-01");
+        assert_eq!(trophy_data.donated, dec!(300));
+
+        assert_eq!(
+            trophy_data.key_image_url,
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/collection/{}?donated=300&created=1970-01-01",
+                trophy_data.collection_id
+            ))
+        );
+    }
+
+    #[test]
     fn close_success() {
         let mut base = new_runner();
 
