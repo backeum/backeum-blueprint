@@ -388,7 +388,7 @@ mod tests {
         let receipt = execute_manifest(
             &mut base.test_runner,
             manifest,
-            "donate_mint_success_2",
+            "donate_update_success_1",
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],
@@ -448,7 +448,7 @@ mod tests {
         let receipt = execute_manifest(
             &mut base.test_runner,
             manifest,
-            "donate_mint_success_2",
+            "donate_update_success_2",
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],
