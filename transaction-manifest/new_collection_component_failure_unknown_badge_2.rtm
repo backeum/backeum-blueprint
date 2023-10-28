@@ -1,9 +1,9 @@
 CALL_METHOD
     Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
     "create_proof_of_non_fungibles"
-    Address("resource_sim1nf9h6ptudcm6uhxuhrf8dkdz04w4hw6qj0d3vu5u0t8ldunrem446h")
+    Address("resource_sim1nt8h6cjw37a3hygaly9etzuma6233znwf7sv6cumc0k2uyl0dl7anj")
     Array<NonFungibleLocalId>(
-        NonFungibleLocalId("{5bbf7ed683eeabc2-c6dfcd0800a833bb-240fe6bf0e5b2b38-c7e92e5850463c9e}")
+        NonFungibleLocalId("{88187e7fec84a59c-9713f20d4bdd245a-90c9c04347db595f-07a038d384ce12a4}")
     )
 ;
 POP_FROM_AUTH_ZONE
@@ -12,7 +12,5 @@ POP_FROM_AUTH_ZONE
 CALL_METHOD
     Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
     "new_collection_component"
-    "Kansuler"
-    "kansuler"
     Proof("collection_owner_badge_proof")
 ;

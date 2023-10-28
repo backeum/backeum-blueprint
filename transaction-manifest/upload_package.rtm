@@ -31,6 +31,12 @@ PUBLISH_PACKAGE_ADVANCED
                                             133u8
                                         ),
                                         Enum<0u8>(
+                                            133u8
+                                        ),
+                                        Enum<0u8>(
+                                            133u8
+                                        ),
+                                        Enum<0u8>(
                                             167u8
                                         ),
                                         Enum<0u8>(
@@ -47,6 +53,9 @@ PUBLISH_PACKAGE_ADVANCED
                                         ),
                                         Enum<0u8>(
                                             12u8
+                                        ),
+                                        Enum<0u8>(
+                                            195u8
                                         ),
                                         Enum<1u8>(
                                             1u64
@@ -65,6 +74,19 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<14u8>(
                                     Array<Enum>(
+                                        Enum<1u8>(
+                                            3u64
+                                        )
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            133u8
+                                        ),
+                                        Enum<0u8>(
+                                            133u8
+                                        ),
                                         Enum<0u8>(
                                             133u8
                                         ),
@@ -75,7 +97,7 @@ PUBLISH_PACKAGE_ADVANCED
                                             133u8
                                         ),
                                         Enum<1u8>(
-                                            3u64
+                                            4u64
                                         ),
                                         Enum<0u8>(
                                             161u8
@@ -111,6 +133,9 @@ PUBLISH_PACKAGE_ADVANCED
                                         ),
                                         Enum<0u8>(
                                             161u8
+                                        ),
+                                        Enum<0u8>(
+                                            161u8
                                         )
                                     )
                                 ),
@@ -125,13 +150,102 @@ PUBLISH_PACKAGE_ADVANCED
                                     )
                                 ),
                                 Enum<14u8>(
-                                    Array<Enum>()
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            161u8
+                                        ),
+                                        Enum<0u8>(
+                                            161u8
+                                        )
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            161u8
+                                        ),
+                                        Enum<0u8>(
+                                            164u8
+                                        )
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            161u8
+                                        ),
+                                        Enum<0u8>(
+                                            164u8
+                                        ),
+                                        Enum<0u8>(
+                                            164u8
+                                        )
+                                    )
                                 ),
                                 Enum<14u8>(
                                     Array<Enum>()
                                 ),
                                 Enum<14u8>(
                                     Array<Enum>()
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>()
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            192u8
+                                        ),
+                                        Enum<0u8>(
+                                            198u8
+                                        )
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            198u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            195u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            192u8
+                                        ),
+                                        Enum<0u8>(
+                                            198u8
+                                        )
+                                    )
                                 ),
                                 Enum<14u8>(
                                     Array<Enum>(
@@ -165,6 +279,8 @@ PUBLISH_PACKAGE_ADVANCED
                                         Enum<0u8>(
                                             Array<String>(
                                                 "trophy_resource_manager",
+                                                "membership_resource_manager",
+                                                "creator_resource_manager",
                                                 "thanks_token_resource_manager",
                                                 "minter_badge",
                                                 "donations",
@@ -172,6 +288,7 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "user_name",
                                                 "user_slug",
                                                 "collection_id",
+                                                "creator_badge_global_id",
                                                 "closed"
                                             )
                                         )
@@ -207,10 +324,24 @@ PUBLISH_PACKAGE_ADVANCED
                                     Enum<1u8>(
                                         Enum<0u8>(
                                             Array<String>(
+                                                "arg"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "CollectionArg"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
                                                 "trophy_resource_manager",
                                                 "thanks_token_resource_manager",
-                                                "repository_owner_badge",
-                                                "collection_owner_badge_proof",
+                                                "membership_resource_manager",
+                                                "creator_resource_manager",
+                                                "repository_owner_access_badge_address",
+                                                "creator_badge_proof",
                                                 "minter_badge",
                                                 "user_name",
                                                 "user_slug",
@@ -249,13 +380,44 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Tuple(
                                     Enum<1u8>(
+                                        "Collection_donate_mint_with_membership_Input"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "tokens",
+                                                "membership_proof"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<0u8>(),
+                                    Enum<0u8>()
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
                                         "Collection_donate_update_Input"
                                     ),
                                     Enum<1u8>(
                                         Enum<0u8>(
                                             Array<String>(
                                                 "tokens",
-                                                "proof"
+                                                "trophy_proof"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "Collection_donate_update_with_membership_Input"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "tokens",
+                                                "trophy_proof",
+                                                "membership_proof"
                                             )
                                         )
                                     )
@@ -292,6 +454,44 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Tuple(
                                     Enum<1u8>(
+                                        "Creator"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "name",
+                                                "description",
+                                                "user_name",
+                                                "user_slug",
+                                                "created",
+                                                "funded",
+                                                "key_image_url"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "Membership"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "name",
+                                                "description",
+                                                "info_url",
+                                                "user_name",
+                                                "user_slug",
+                                                "creator",
+                                                "created",
+                                                "donated",
+                                                "key_image_url"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
                                         "Trophy"
                                     ),
                                     Enum<1u8>(
@@ -312,6 +512,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
+                                Enum<0u8>(),
                                 Enum<14u8>(
                                     Enum<1u8>(
                                         Enum<1u8>()
@@ -325,6 +526,11 @@ PUBLISH_PACKAGE_ADVANCED
                                         )
                                     )
                                 ),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
@@ -351,8 +557,14 @@ PUBLISH_PACKAGE_ADVANCED
                     ),
                     Map<String, Enum>(),
                     Map<String, Enum>(
+                        "Creator" => Enum<1u8>(
+                            15u64
+                        ),
+                        "Membership" => Enum<1u8>(
+                            16u64
+                        ),
                         "Trophy" => Enum<1u8>(
-                            11u64
+                            17u64
                         )
                     ),
                     Tuple(
@@ -366,7 +578,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        4u64
+                                        5u64
                                     )
                                 ),
                                 "Collection_new"
@@ -382,15 +594,36 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        5u64
+                                        6u64
                                     )
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        6u64
+                                        7u64
                                     )
                                 ),
                                 "Collection_donate_mint"
+                            ),
+                            "donate_mint_with_membership" => Tuple(
+                                Enum<1u8>(
+                                    Tuple(
+                                        Enum<1u8>(),
+                                        Tuple(
+                                            1u32
+                                        )
+                                    )
+                                ),
+                                Enum<0u8>(
+                                    Enum<1u8>(
+                                        8u64
+                                    )
+                                ),
+                                Enum<0u8>(
+                                    Enum<1u8>(
+                                        9u64
+                                    )
+                                ),
+                                "Collection_donate_mint_with_membership"
                             ),
                             "donate_update" => Tuple(
                                 Enum<1u8>(
@@ -403,7 +636,28 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        7u64
+                                        10u64
+                                    )
+                                ),
+                                Enum<0u8>(
+                                    Enum<1u8>(
+                                        9u64
+                                    )
+                                ),
+                                "Collection_donate_update"
+                            ),
+                            "donate_update_with_membership" => Tuple(
+                                Enum<1u8>(
+                                    Tuple(
+                                        Enum<1u8>(),
+                                        Tuple(
+                                            1u32
+                                        )
+                                    )
+                                ),
+                                Enum<0u8>(
+                                    Enum<1u8>(
+                                        11u64
                                     )
                                 ),
                                 Enum<0u8>(
@@ -411,7 +665,7 @@ PUBLISH_PACKAGE_ADVANCED
                                         161u8
                                     )
                                 ),
-                                "Collection_donate_update"
+                                "Collection_donate_update_with_membership"
                             ),
                             "withdraw_donations" => Tuple(
                                 Enum<1u8>(
@@ -424,7 +678,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        8u64
+                                        12u64
                                     )
                                 ),
                                 Enum<0u8>(
@@ -445,7 +699,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        9u64
+                                        13u64
                                     )
                                 ),
                                 Enum<0u8>(
@@ -466,7 +720,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        10u64
+                                        14u64
                                     )
                                 ),
                                 Enum<0u8>(
@@ -495,7 +749,9 @@ PUBLISH_PACKAGE_ADVANCED
                             ),
                             Map<String, Enum>(
                                 "donate_mint" => Enum<0u8>(),
+                                "donate_mint_with_membership" => Enum<0u8>(),
                                 "donate_update" => Enum<0u8>(),
+                                "donate_update_with_membership" => Enum<0u8>(),
                                 "withdraw_donations" => Enum<2u8>(
                                     Array<String>(
                                         "owner"
@@ -544,6 +800,9 @@ PUBLISH_PACKAGE_ADVANCED
                                             133u8
                                         ),
                                         Enum<0u8>(
+                                            133u8
+                                        ),
+                                        Enum<0u8>(
                                             129u8
                                         ),
                                         Enum<1u8>(
@@ -580,12 +839,6 @@ PUBLISH_PACKAGE_ADVANCED
                                 Enum<14u8>(
                                     Array<Enum>(
                                         Enum<0u8>(
-                                            12u8
-                                        ),
-                                        Enum<0u8>(
-                                            12u8
-                                        ),
-                                        Enum<0u8>(
                                             164u8
                                         )
                                     )
@@ -614,7 +867,21 @@ PUBLISH_PACKAGE_ADVANCED
                                     )
                                 ),
                                 Enum<14u8>(
-                                    Array<Enum>()
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        )
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            161u8
+                                        )
+                                    )
                                 ),
                                 Enum<14u8>(
                                     Array<Enum>(
@@ -640,6 +907,52 @@ PUBLISH_PACKAGE_ADVANCED
                                         ),
                                         Enum<0u8>(
                                             12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            192u8
+                                        ),
+                                        Enum<0u8>(
+                                            198u8
+                                        )
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            198u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            195u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
+                                        ),
+                                        Enum<0u8>(
+                                            192u8
+                                        ),
+                                        Enum<0u8>(
+                                            198u8
                                         )
                                     )
                                 ),
@@ -676,7 +989,8 @@ PUBLISH_PACKAGE_ADVANCED
                                             Array<String>(
                                                 "trophy_resource_manager",
                                                 "thanks_token_resource_manager",
-                                                "collection_owner_badge_manager",
+                                                "membership_resource_manager",
+                                                "creator_resource_manager",
                                                 "minter_badge_manager",
                                                 "repository_owner_access_badge_address",
                                                 "dapp_definition_address",
@@ -735,9 +1049,7 @@ PUBLISH_PACKAGE_ADVANCED
                                     Enum<1u8>(
                                         Enum<0u8>(
                                             Array<String>(
-                                                "user_name",
-                                                "user_slug",
-                                                "collection_owner_badge_proof"
+                                                "creator_badge_proof"
                                             )
                                         )
                                     )
@@ -767,11 +1079,14 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Tuple(
                                     Enum<1u8>(
-                                        "Repository_new_collection_owner_badge_Input"
+                                        "Repository_mint_creator_badge_Input"
                                     ),
                                     Enum<1u8>(
                                         Enum<0u8>(
-                                            Array<String>()
+                                            Array<String>(
+                                                "user_name",
+                                                "user_slug"
+                                            )
                                         )
                                     )
                                 ),
@@ -783,6 +1098,18 @@ PUBLISH_PACKAGE_ADVANCED
                                         Enum<0u8>(
                                             Array<String>(
                                                 "trophies"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "Repository_merge_membership_Input"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "memberships"
                                             )
                                         )
                                     )
@@ -811,13 +1138,38 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Tuple(
                                     Enum<1u8>(
-                                        "CollectionOwnerBadge"
+                                        "Creator"
                                     ),
                                     Enum<1u8>(
                                         Enum<0u8>(
                                             Array<String>(
                                                 "name",
-                                                "description"
+                                                "description",
+                                                "user_name",
+                                                "user_slug",
+                                                "created",
+                                                "funded",
+                                                "key_image_url"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "Membership"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "name",
+                                                "description",
+                                                "info_url",
+                                                "user_name",
+                                                "user_slug",
+                                                "creator",
+                                                "created",
+                                                "donated",
+                                                "key_image_url"
                                             )
                                         )
                                     )
@@ -868,6 +1220,8 @@ PUBLISH_PACKAGE_ADVANCED
                                 Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
                                 Enum<0u8>()
                             )
                         )
@@ -888,11 +1242,14 @@ PUBLISH_PACKAGE_ADVANCED
                     ),
                     Map<String, Enum>(),
                     Map<String, Enum>(
-                        "CollectionOwnerBadge" => Enum<1u8>(
-                            12u64
+                        "Creator" => Enum<1u8>(
+                            13u64
+                        ),
+                        "Membership" => Enum<1u8>(
+                            14u64
                         ),
                         "Trophy" => Enum<1u8>(
-                            13u64
+                            15u64
                         )
                     ),
                     Tuple(
@@ -953,7 +1310,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 "Repository_new_collection_component_and_badge"
                             ),
-                            "new_collection_owner_badge" => Tuple(
+                            "mint_creator_badge" => Tuple(
                                 Enum<1u8>(
                                     Tuple(
                                         Enum<1u8>(),
@@ -972,7 +1329,7 @@ PUBLISH_PACKAGE_ADVANCED
                                         161u8
                                     )
                                 ),
-                                "Repository_new_collection_owner_badge"
+                                "Repository_mint_creator_badge"
                             ),
                             "merge_trophies" => Tuple(
                                 Enum<1u8>(
@@ -995,7 +1352,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 "Repository_merge_trophies"
                             ),
-                            "redeem_thanks_token" => Tuple(
+                            "merge_membership" => Tuple(
                                 Enum<1u8>(
                                     Tuple(
                                         Enum<1u8>(),
@@ -1007,6 +1364,27 @@ PUBLISH_PACKAGE_ADVANCED
                                 Enum<0u8>(
                                     Enum<1u8>(
                                         10u64
+                                    )
+                                ),
+                                Enum<0u8>(
+                                    Enum<0u8>(
+                                        161u8
+                                    )
+                                ),
+                                "Repository_merge_membership"
+                            ),
+                            "redeem_thanks_token" => Tuple(
+                                Enum<1u8>(
+                                    Tuple(
+                                        Enum<1u8>(),
+                                        Tuple(
+                                            1u32
+                                        )
+                                    )
+                                ),
+                                Enum<0u8>(
+                                    Enum<1u8>(
+                                        11u64
                                     )
                                 ),
                                 Enum<0u8>(
@@ -1027,7 +1405,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Enum<0u8>(
                                     Enum<1u8>(
-                                        11u64
+                                        12u64
                                     )
                                 ),
                                 Enum<0u8>(
@@ -1052,8 +1430,9 @@ PUBLISH_PACKAGE_ADVANCED
                         "new_collection_component_and_badge" => Enum<2u8>(
                             Decimal("5")
                         ),
-                        "new_collection_owner_badge" => Enum<0u8>(),
+                        "mint_creator_badge" => Enum<0u8>(),
                         "merge_trophies" => Enum<0u8>(),
+                        "merge_membership" => Enum<0u8>(),
                         "redeem_thanks_token" => Enum<0u8>(),
                         "close_repository" => Enum<0u8>()
                     )
@@ -1072,8 +1451,9 @@ PUBLISH_PACKAGE_ADVANCED
                             Map<String, Enum>(
                                 "new_collection_component" => Enum<0u8>(),
                                 "new_collection_component_and_badge" => Enum<0u8>(),
-                                "new_collection_owner_badge" => Enum<0u8>(),
+                                "mint_creator_badge" => Enum<0u8>(),
                                 "merge_trophies" => Enum<0u8>(),
+                                "merge_membership" => Enum<0u8>(),
                                 "redeem_thanks_token" => Enum<0u8>(),
                                 "close_repository" => Enum<2u8>(
                                     Array<String>(
@@ -1087,7 +1467,7 @@ PUBLISH_PACKAGE_ADVANCED
             )
         )
     )
-    Blob("02cca202045b77a27e21cc92c9fd4009d783f0d1fdaa2a863cd9706ce0aa6ce4")
+    Blob("6c59cd309b6d4f1aeb8ac9df1d03a79a4961f4d3226d319e7fc8adddda81e011")
     Map<String, Tuple>()
     Enum<0u8>()
 ;

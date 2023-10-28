@@ -7,7 +7,7 @@ CALL_METHOD
     )
 ;
 CALL_METHOD
-    Address("component_sim1crwvvmcja2pz4cwrytvjsuq8xstfaetfk7d6knq607nvag0jx8pnkz")
+    Address("component_sim1cqrtrzgx2w3025s6lx627wqn4pwvq23ym0xgajxzt5gr4q0alfgxy5")
     "withdraw_donations"
 ;
 CALL_METHOD

@@ -10,12 +10,16 @@ TAKE_FROM_WORKTOP
     Bucket("donation_amount")
 ;
 CALL_METHOD
-    Address("component_sim1cpx3wj89ae3x7gctrumzcaq7890zkryfd7xkvhaju4mfffad2xzsuk")
+    Address("component_sim1cpzy02fdrzklwy5l3wgwr9ndn5j0jpu7xwnsuwt3dqnh677ufdgh0j")
     "donate_mint"
     Bucket("donation_amount")
 ;
 ASSERT_WORKTOP_CONTAINS
     Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Decimal("1")
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
     Decimal("1")
 ;
 ASSERT_WORKTOP_CONTAINS

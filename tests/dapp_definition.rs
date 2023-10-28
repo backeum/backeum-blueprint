@@ -14,11 +14,10 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
-        let collection_admin_badge_id: NonFungibleGlobalId;
+        let creator_badge_account = new_account(&mut base.test_runner);
+        let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            collection_admin_badge_id =
-                mint_collection_owner_badge(&mut base, &collection_admin_account);
+            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -27,20 +26,14 @@ mod tests {
         // Create a donation component
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
-                collection_admin_badge_id,
+                creator_badge_account.wallet_address,
+                creator_badge_badge_id,
             )
             .pop_from_auth_zone("collection_owner_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof"),),
             );
 
         // Execute it
@@ -49,7 +42,7 @@ mod tests {
             manifest,
             "claim_royalties_success_1",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -135,30 +128,23 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
-        let collection_admin_badge_id: NonFungibleGlobalId;
+        let creator_badge_account = new_account(&mut base.test_runner);
+        let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            collection_admin_badge_id =
-                mint_collection_owner_badge(&mut base, &collection_admin_account);
+            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
         }
 
         // Create a donation component
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
-                collection_admin_badge_id.clone(),
+                creator_badge_account.wallet_address,
+                creator_badge_badge_id.clone(),
             )
             .pop_from_auth_zone("collection_owner_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof"),),
             );
 
         // Execute it
@@ -167,7 +153,7 @@ mod tests {
             manifest,
             "claim_royalties_failure_auth_1",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -204,8 +190,8 @@ mod tests {
 
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
-                collection_admin_badge_id,
+                creator_badge_account.wallet_address,
+                creator_badge_badge_id,
             )
             .claim_package_royalties(base.package_address)
             .assert_worktop_contains_any(XRD)

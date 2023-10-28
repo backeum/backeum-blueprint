@@ -20,14 +20,10 @@ CLONE_PROOF
 CALL_METHOD
     Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
     "new_collection_component"
-    "Kansuler"
-    "kansuler"
     Proof("collection_owner_badge_proof_1")
 ;
 CALL_METHOD
     Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
     "new_collection_component"
-    "Kansuler"
-    "kansuler"
     Proof("collection_owner_badge_proof_2")
 ;

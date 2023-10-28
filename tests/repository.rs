@@ -15,30 +15,23 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
-        let collection_admin_badge_id: NonFungibleGlobalId;
+        let creator_badge_account = new_account(&mut base.test_runner);
+        let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            collection_admin_badge_id =
-                mint_collection_owner_badge(&mut base, &collection_admin_account);
+            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
         }
 
         // Create two collection components
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
-                collection_admin_badge_id,
+                creator_badge_account.wallet_address,
+                creator_badge_badge_id,
             )
             .pop_from_auth_zone("collection_owner_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof"),),
             );
 
         // Execute it
@@ -47,7 +40,7 @@ mod tests {
             manifest,
             "new_collection_component_success_1",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -60,7 +53,7 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
+        let creator_badge_account = new_account(&mut base.test_runner);
 
         let mut fake_collection_owner_badges = BTreeMap::new();
         fake_collection_owner_badges.insert(
@@ -107,7 +100,7 @@ mod tests {
                     description: "Owner badge for packages deployed for Backeum".to_owned(),
                 }]),
             )
-            .deposit_batch(collection_admin_account.wallet_address);
+            .deposit_batch(creator_badge_account.wallet_address);
 
         // Execute the manifest.
         let receipt = execute_manifest(
@@ -115,7 +108,45 @@ mod tests {
             manifest,
             "new_collection_component_failure_unknown_badge_1",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_success();
+
+        let mut tmp_domains = BTreeMap::new();
+        tmp_domains.insert(
+            "name".to_owned(),
+            MetadataValue::String("Backeum Repository Owner Badges".to_owned()),
+        );
+
+        let tmp_domains_metadata = ModuleConfig {
+            init: tmp_domains.into(),
+            roles: RoleAssignmentInit::default(),
+        };
+
+        // Create an owner badge used for repository component.
+        let manifest = ManifestBuilder::new()
+            .create_ruid_non_fungible_resource(
+                OwnerRole::None,
+                false,
+                tmp_domains_metadata,
+                NonFungibleResourceRoles::single_locked_rule(rule!(allow_all)),
+                Some([Nft {
+                    name: "Test.xrd".to_owned(),
+                    description: "Owner badge for packages deployed for Backeum".to_owned(),
+                }]),
+            )
+            .deposit_batch(creator_badge_account.wallet_address);
+
+        // Execute the manifest.
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "create_tmp_domains",
+            vec![NonFungibleGlobalId::from_public_key(
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -126,7 +157,7 @@ mod tests {
         let fake_collection_owner_badge_resource_address = result.new_resource_addresses()[0];
 
         let fake_collection_owner_badge_vault = base.test_runner.get_component_vaults(
-            collection_admin_account.wallet_address,
+            creator_badge_account.wallet_address,
             fake_collection_owner_badge_resource_address,
         );
 
@@ -146,20 +177,14 @@ mod tests {
         // Create two collection components
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
+                creator_badge_account.wallet_address,
                 fake_collection_owner_badge_global_id,
             )
             .pop_from_auth_zone("collection_owner_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof"),),
             );
 
         // Execute it
@@ -168,7 +193,7 @@ mod tests {
             manifest,
             "new_collection_component_failure_unknown_badge_2",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -181,7 +206,7 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
+        let creator_badge_account = new_account(&mut base.test_runner);
 
         // Create two collection components
         let manifest = ManifestBuilder::new()
@@ -191,7 +216,7 @@ mod tests {
                 manifest_args!("Kansuler", "kansuler",),
             )
             .assert_worktop_contains(base.collection_owner_badge_resource_address, dec!(1))
-            .deposit_batch(collection_admin_account.wallet_address);
+            .deposit_batch(creator_badge_account.wallet_address);
 
         // Execute it
         let receipt = execute_manifest(
@@ -199,7 +224,7 @@ mod tests {
             manifest,
             "new_collection_component_and_badge_success_1",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -208,7 +233,7 @@ mod tests {
 
         let collection_component_address = result.new_component_addresses()[0];
         let collection_owner_badge_vault = base.test_runner.get_component_vaults(
-            collection_admin_account.wallet_address,
+            creator_badge_account.wallet_address,
             base.collection_owner_badge_resource_address,
         );
 
@@ -228,7 +253,7 @@ mod tests {
         // Create two collection components
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
+                creator_badge_account.wallet_address,
                 collection_owner_badge_global_id,
             )
             .call_method(
@@ -236,7 +261,7 @@ mod tests {
                 "withdraw_donations",
                 manifest_args!(),
             )
-            .deposit_batch(collection_admin_account.wallet_address);
+            .deposit_batch(creator_badge_account.wallet_address);
 
         // Execute it
         let receipt = execute_manifest(
@@ -244,7 +269,7 @@ mod tests {
             manifest,
             "new_collection_component_and_badge_success_2",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -257,11 +282,10 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
-        let collection_admin_badge_id: NonFungibleGlobalId;
+        let creator_badge_account = new_account(&mut base.test_runner);
+        let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            collection_admin_badge_id =
-                mint_collection_owner_badge(&mut base, &collection_admin_account);
+            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -270,20 +294,14 @@ mod tests {
         // Create two collection components
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
-                collection_admin_badge_id,
+                creator_badge_account.wallet_address,
+                creator_badge_badge_id,
             )
             .pop_from_auth_zone("collection_owner_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof"),),
             );
 
         // Execute it
@@ -292,7 +310,7 @@ mod tests {
             manifest,
             "merge_success_1",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );
@@ -371,7 +389,7 @@ mod tests {
 
         assert_eq!(trophy_data.collection_id, result);
 
-        assert_eq!(trophy_data.name, "Backer Trophy: Kansuler");
+        assert_eq!(trophy_data.name, "Trophy: Kansuler");
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
@@ -393,11 +411,10 @@ mod tests {
         let mut base = new_runner();
 
         // Create an component admin account
-        let collection_admin_account = new_account(&mut base.test_runner);
-        let collection_admin_badge_id: NonFungibleGlobalId;
+        let creator_badge_account = new_account(&mut base.test_runner);
+        let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            collection_admin_badge_id =
-                mint_collection_owner_badge(&mut base, &collection_admin_account);
+            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -406,8 +423,8 @@ mod tests {
         // Create two collection components
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
-                collection_admin_account.wallet_address,
-                collection_admin_badge_id,
+                creator_badge_account.wallet_address,
+                creator_badge_badge_id,
             )
             .pop_from_auth_zone("collection_owner_badge_proof")
             .clone_proof(
@@ -421,24 +438,12 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof_1"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof_1"),),
             )
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| {
-                    (
-                        "Kansuler",
-                        "kansuler",
-                        lookup.proof("collection_owner_badge_proof_2"),
-                    )
-                },
+                |lookup| (lookup.proof("collection_owner_badge_proof_2"),),
             );
 
         // Execute it
@@ -447,7 +452,7 @@ mod tests {
             manifest,
             "merge_failure_different_collection_1merge_failure_different_collection",
             vec![NonFungibleGlobalId::from_public_key(
-                &collection_admin_account.public_key,
+                &creator_badge_account.public_key,
             )],
             true,
         );

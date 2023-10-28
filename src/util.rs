@@ -1,7 +1,7 @@
 use scrypto::prelude::*;
 
 // function to generate the url for the image
-pub fn generate_url(
+pub fn generate_trophy_url(
     base_path: String,
     donated: Decimal,
     created: String,
@@ -10,6 +10,27 @@ pub fn generate_url(
     format!(
         "{}/nft/collection/{}?donated={}&created={}",
         base_path, collection_id, donated, created
+    )
+}
+
+// function to generate the url for the image
+pub fn generate_membership_url(
+    base_path: String,
+    donated: Decimal,
+    created: String,
+    user_slug: String,
+) -> String {
+    format!(
+        "{}/nft/membership/{}?donated={}&created={}",
+        base_path, user_slug, donated, created
+    )
+}
+
+// function to generate the url for the image
+pub fn generate_creator_url(base_path: String, donated: Decimal, created: String) -> String {
+    format!(
+        "{}/nft/creator?donated={}&created={}",
+        base_path, donated, created
     )
 }
 

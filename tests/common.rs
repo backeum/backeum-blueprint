@@ -71,8 +71,8 @@ pub fn mint_collection_owner_badge(
     let manifest = ManifestBuilder::new()
         .call_method(
             base.repository_component,
-            "new_collection_owner_badge",
-            manifest_args!(),
+            "mint_creator_badge",
+            manifest_args!("Kansuler", "kansuler"),
         )
         .assert_worktop_contains_any(base.collection_owner_badge_resource_address)
         .deposit_batch(account.wallet_address);
@@ -81,7 +81,7 @@ pub fn mint_collection_owner_badge(
     let receipt = execute_manifest(
         &mut base.test_runner,
         manifest,
-        "new_collection_owner_badge",
+        "mint_creator_badge",
         vec![NonFungibleGlobalId::from_public_key(&account.public_key)],
         true,
     );
@@ -118,6 +118,7 @@ pub struct TestRunner {
     pub package_owner_badge_global_id: NonFungibleGlobalId,
     pub collection_owner_badge_resource_address: ResourceAddress,
     pub repository_owner_badge_global_id: NonFungibleGlobalId,
+    pub membership_resource_address: ResourceAddress,
     pub trophy_resource_address: ResourceAddress,
     pub thanks_token_resource_address: ResourceAddress,
 }
@@ -319,6 +320,9 @@ pub fn new_runner() -> TestRunner {
     // Get the trophy resource address.
     let trophy_resource_address = result.new_resource_addresses()[2];
 
+    // Get the membership resource address.
+    let membership_resource_address = result.new_resource_addresses()[4];
+
     // Get the thanks token resource address.
     let thanks_token_resource_address = result.new_resource_addresses()[3];
 
@@ -378,6 +382,7 @@ pub fn new_runner() -> TestRunner {
         package_owner_badge_global_id,
         collection_owner_badge_resource_address,
         repository_owner_badge_global_id,
+        membership_resource_address,
         trophy_resource_address,
         thanks_token_resource_address,
     }

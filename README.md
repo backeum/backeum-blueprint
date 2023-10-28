@@ -1,5 +1,5 @@
 # Backeum blueprint
-[![Test](https://github.com/backeum/donation-component/actions/workflows/test.yml/badge.svg)](https://github.com/backeum/donation-component/actions/workflows/test.yml) [![Security audit](https://github.com/backeum/donation-component/actions/workflows/audit.yml/badge.svg)](https://github.com/backeum/donation-component/actions/workflows/audit.yml) [![Compile](https://github.com/backeum/donation-component/actions/workflows/compile.yml/badge.svg)](https://github.com/backeum/donation-component/actions/workflows/compile.yml) ![Static Badge](https://img.shields.io/badge/Scrypto-v1.0.0-blue)
+[![Test](https://github.com/backeum/donation-component/actions/workflows/test.yml/badge.svg)](https://github.com/backeum/donation-component/actions/workflows/test.yml) [![Security audit](https://github.com/backeum/donation-component/actions/workflows/audit.yml/badge.svg)](https://github.com/backeum/donation-component/actions/workflows/audit.yml) [![Compile](https://github.com/backeum/donation-component/actions/workflows/compile.yml/badge.svg)](https://github.com/backeum/donation-component/actions/workflows/compile.yml) ![Static Badge](https://img.shields.io/badge/Scrypto-v1.0.1-blue)
 
 
 ## Overview
@@ -20,6 +20,7 @@ Responsible for:
 
 - Owning the NFT minting process.
 - Merging NFTs from the same collection.
+- Merging memberships from the same creator.
 - Serving as a factory that delegates permissions to mint on the NFT resource to the collection components.
 
 ### 2. Collection Component
@@ -28,6 +29,7 @@ Creators on [Backeum](https://backeum.com) use the collection component. Its pri
 
 - Receiving donations on behalf of the creators.
 - Issuing a trophy NFT as a token of appreciation and proof of backing a creator.
+- Issuing a membership NFT as a token of appreciation and proof of backing a creator.
 
 ## Integration with Backeum Platform
 
@@ -42,7 +44,7 @@ deterministically. Be sure to install [Docker](https://docs.docker.com/engine/in
 
 Pull the official scrypto-builder image from Docker Hub.
 ```shell
-DOCKER_DEFAULT_PLATFORM=linux/amd64 docker pull radixdlt/scrypto-builder:v1.0.0
+DOCKER_DEFAULT_PLATFORM=linux/amd64 docker pull radixdlt/scrypto-builder:v1.0.1
 ```
 
 Clone the repository
@@ -52,7 +54,7 @@ git clone git@github.com:backeum/backeum-blueprint.git
 
 Navigate into the git repository and then, run
 ```shell
-DOCKER_DEFAULT_PLATFORM=linux/amd64 docker run -v $(pwd):/src radixdlt/scrypto-builder:v1.0.0
+DOCKER_DEFAULT_PLATFORM=linux/amd64 docker run -v $(pwd):/src radixdlt/scrypto-builder:v1.0.1
 ```
 
 This will compile the code and generate a `build` directory. The `build` directory contains the compiled code.

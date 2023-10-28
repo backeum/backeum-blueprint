@@ -18,7 +18,7 @@ CALL_METHOD
     )
 ;
 CALL_METHOD
-    Address("component_sim1cpx3wj89ae3x7gctrumzcaq7890zkryfd7xkvhaju4mfffad2xzsuk")
+    Address("component_sim1cpzy02fdrzklwy5l3wgwr9ndn5j0jpu7xwnsuwt3dqnh677ufdgh0j")
     "withdraw_fees"
 ;
 ASSERT_WORKTOP_CONTAINS_ANY

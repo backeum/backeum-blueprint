@@ -22,21 +22,33 @@ CREATE_PROOF_FROM_AUTH_ZONE_OF_NON_FUNGIBLES
     Array<NonFungibleLocalId>(
         NonFungibleLocalId("{b920c94a92484dd4-2974b423875baf69-70556dbe2c54cec9-1cb0d55cea79e864}")
     )
-    Proof("proof")
+    Proof("trophy_proof")
+;
+CALL_METHOD
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    "create_proof_of_non_fungibles"
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{66cf1592afcc573c-53cc182e0f96c0a5-e7522adbd9c09a42-cd0a1b57a190bc3b}")
+    )
+;
+CREATE_PROOF_FROM_AUTH_ZONE_OF_NON_FUNGIBLES
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{66cf1592afcc573c-53cc182e0f96c0a5-e7522adbd9c09a42-cd0a1b57a190bc3b}")
+    )
+    Proof("membership_proof")
 ;
 CALL_METHOD
     Address("component_sim1cpzy02fdrzklwy5l3wgwr9ndn5j0jpu7xwnsuwt3dqnh677ufdgh0j")
-    "donate_update"
+    "donate_update_with_membership"
     Bucket("donation_amount")
-    Proof("proof")
+    Proof("trophy_proof")
+    Proof("membership_proof")
 ;
 ASSERT_WORKTOP_CONTAINS
     Address("resource_sim1t4xh27qdnm8g5489vrpe298h0hr5tf59ncj056p888amskczv3wag3")
     Decimal("150")
-;
-ASSERT_WORKTOP_CONTAINS
-    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
-    Decimal("1")
 ;
 CALL_METHOD
     Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
