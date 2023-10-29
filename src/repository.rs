@@ -277,6 +277,26 @@ mod repository {
                 panic!("This repository is permanently closed.");
             }
 
+            assert!(
+                trophy_name.len() >= 3,
+                "Trophy name must be 3 characters or more."
+            );
+
+            assert!(
+                trophy_name.len() <= 32,
+                "Trophy name must not be over 32 characters"
+            );
+
+            assert!(
+                trophy_description.len() >= 10,
+                "Trophy description must be 10 characters or more."
+            );
+
+            assert!(
+                trophy_description.len() <= 255,
+                "Trophy description must not be over 255 characters"
+            );
+
             let checked_creator_badge_proof =
                 creator_badge_proof.check(self.creator_resource_manager.address());
 
@@ -319,6 +339,48 @@ mod repository {
             if self.closed.is_some() {
                 panic!("This repository is permanently closed.");
             }
+
+            assert_ne!(
+                creator_name.len(),
+                0,
+                "Creator name must be 1 character or more."
+            );
+
+            assert!(
+                creator_name.len() <= 255,
+                "Creator name must not be over 255 characters"
+            );
+
+            assert_ne!(
+                creator_slug.len(),
+                0,
+                "Creator slug must be 1 character or more."
+            );
+
+            assert!(
+                creator_slug.len() <= 30,
+                "Creator slug must not be over 30 characters"
+            );
+
+            assert!(
+                trophy_name.len() >= 3,
+                "Trophy name must be 3 characters or more."
+            );
+
+            assert!(
+                trophy_name.len() <= 32,
+                "Trophy name must not be over 32 characters"
+            );
+
+            assert!(
+                trophy_description.len() >= 10,
+                "Trophy description must be 10 characters or more."
+            );
+
+            assert!(
+                trophy_description.len() <= 255,
+                "Trophy description must not be over 255 characters"
+            );
 
             // Get the domain name used from the trophy resource manager.
             let domain: String = self
@@ -376,6 +438,28 @@ mod repository {
         // Mints a new collection owner badge that the user can use to gain ownership of a
         // collection. Ownership badges are free to mint and burn.
         pub fn mint_creator_badge(&mut self, creator_name: String, creator_slug: String) -> Bucket {
+            assert_ne!(
+                creator_name.len(),
+                0,
+                "Creator name must be 1 character or more."
+            );
+
+            assert!(
+                creator_name.len() <= 255,
+                "Creator name must not be over 255 characters"
+            );
+
+            assert_ne!(
+                creator_slug.len(),
+                0,
+                "Creator slug must be 1 character or more."
+            );
+
+            assert!(
+                creator_slug.len() <= 30,
+                "Creator slug must not be over 30 characters"
+            );
+
             // Get the domain name used from the trophy resource manager.
             let domain: String = self
                 .trophy_resource_manager
