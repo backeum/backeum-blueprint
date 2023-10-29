@@ -396,7 +396,7 @@ mod repository {
             let creator_badge = self
                 .creator_resource_manager
                 .mint_ruid_non_fungible::<Creator>(Creator {
-                    name: format!("Backeum Owner Badge: {}", creator_name.clone(),),
+                    name: format!("Creator Badge: {}", creator_name.clone(),),
                     description:
                         "Grants ownership of Backeum collection components and membership badges"
                             .to_string(),
@@ -473,7 +473,7 @@ mod repository {
 
             self.creator_resource_manager
                 .mint_ruid_non_fungible::<Creator>(Creator {
-                    name: format!("Backeum Owner Badge: {}", creator_name.clone(),),
+                    name: format!("Creator Badge: {}", creator_name.clone(),),
                     description:
                         "Grants ownership of Backeum collection components and membership badges"
                             .to_string(),
