@@ -10,7 +10,7 @@ mod repository {
     enable_package_royalties! {
         new => Free;
         merge_trophies => Free;
-        merge_membership => Free;
+        merge_memberships => Free;
         new_collection_component => Usd(5.into());
         new_collection_component_and_badge => Usd(5.into());
         mint_creator_badge => Free;
@@ -27,7 +27,7 @@ mod repository {
             new_collection_component_and_badge => PUBLIC;
             mint_creator_badge => PUBLIC;
             merge_trophies => PUBLIC;
-            merge_membership => PUBLIC;
+            merge_memberships => PUBLIC;
             redeem_thanks_token => PUBLIC;
             close_repository => restrict_to: [admin];
         }
@@ -478,9 +478,9 @@ mod repository {
                 .mint_ruid_non_fungible(new_trophy_data.clone())
         }
 
-        // merge_membership will take multiple memberships of the same creator and merge them into
+        // merge_memberships will take multiple memberships of the same creator and merge them into
         // one.
-        pub fn merge_membership(&mut self, memberships: Bucket) -> Bucket {
+        pub fn merge_memberships(&mut self, memberships: Bucket) -> Bucket {
             assert_eq!(
                 memberships.resource_address(),
                 self.membership_resource_manager.address(),

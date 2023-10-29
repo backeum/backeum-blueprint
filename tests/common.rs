@@ -63,10 +63,7 @@ pub fn new_account(test_runner: &mut DefaultTestRunner) -> Account {
 }
 
 #[cfg(test)]
-pub fn mint_collection_owner_badge(
-    base: &mut TestRunner,
-    account: &Account,
-) -> NonFungibleGlobalId {
+pub fn mint_creator_badge(base: &mut TestRunner, account: &Account) -> NonFungibleGlobalId {
     // Test the repository component via the new function.
     let manifest = ManifestBuilder::new()
         .call_method(
@@ -74,7 +71,7 @@ pub fn mint_collection_owner_badge(
             "mint_creator_badge",
             manifest_args!("Kansuler", "kansuler"),
         )
-        .assert_worktop_contains_any(base.collection_owner_badge_resource_address)
+        .assert_worktop_contains_any(base.creator_badge_resource_address)
         .deposit_batch(account.wallet_address);
 
     // Execute the manifest.
@@ -89,23 +86,22 @@ pub fn mint_collection_owner_badge(
     receipt.expect_commit_success();
 
     // Get the repository component vault
-    let collection_owner_badge_vault = base.test_runner.get_component_vaults(
-        account.wallet_address,
-        base.collection_owner_badge_resource_address,
-    );
+    let creator_badge_vault = base
+        .test_runner
+        .get_component_vaults(account.wallet_address, base.creator_badge_resource_address);
 
     let (_, mut iterator) = base
         .test_runner
-        .inspect_non_fungible_vault(collection_owner_badge_vault[0])
+        .inspect_non_fungible_vault(creator_badge_vault[0])
         .unwrap();
 
     // Get the collection owner badge
-    let collection_owner_badge_id = iterator.next().unwrap();
+    let creator_badge_id = iterator.next().unwrap();
 
     // Return global ID
     NonFungibleGlobalId::new(
-        base.collection_owner_badge_resource_address,
-        collection_owner_badge_id.clone(),
+        base.creator_badge_resource_address,
+        creator_badge_id.clone(),
     )
 }
 
@@ -116,7 +112,7 @@ pub struct TestRunner {
     pub owner_account: Account,
     pub package_address: PackageAddress,
     pub package_owner_badge_global_id: NonFungibleGlobalId,
-    pub collection_owner_badge_resource_address: ResourceAddress,
+    pub creator_badge_resource_address: ResourceAddress,
     pub repository_owner_badge_global_id: NonFungibleGlobalId,
     pub membership_resource_address: ResourceAddress,
     pub trophy_resource_address: ResourceAddress,
@@ -315,7 +311,7 @@ pub fn new_runner() -> TestRunner {
     let repository_component = result.new_component_addresses()[0];
 
     // Collection owner badge resource address
-    let collection_owner_badge_resource_address = result.new_resource_addresses()[1];
+    let creator_badge_resource_address = result.new_resource_addresses()[1];
 
     // Get the trophy resource address.
     let trophy_resource_address = result.new_resource_addresses()[2];
@@ -380,7 +376,7 @@ pub fn new_runner() -> TestRunner {
         owner_account,
         package_address,
         package_owner_badge_global_id,
-        collection_owner_badge_resource_address,
+        creator_badge_resource_address: creator_badge_resource_address,
         repository_owner_badge_global_id,
         membership_resource_address,
         trophy_resource_address,

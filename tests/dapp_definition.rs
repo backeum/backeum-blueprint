@@ -1,6 +1,6 @@
 #[path = "./common.rs"]
 mod common;
-use common::{execute_manifest, mint_collection_owner_badge, new_account, new_runner};
+use common::{execute_manifest, mint_creator_badge, new_account, new_runner};
 
 use scrypto::prelude::*;
 use transaction::builder::*;
@@ -17,7 +17,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -29,11 +29,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id,
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -131,7 +131,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create a donation component
@@ -140,11 +140,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it

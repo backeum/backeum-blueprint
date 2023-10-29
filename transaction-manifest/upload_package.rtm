@@ -1104,7 +1104,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 Tuple(
                                     Enum<1u8>(
-                                        "Repository_merge_membership_Input"
+                                        "Repository_merge_memberships_Input"
                                     ),
                                     Enum<1u8>(
                                         Enum<0u8>(
@@ -1352,7 +1352,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 ),
                                 "Repository_merge_trophies"
                             ),
-                            "merge_membership" => Tuple(
+                            "merge_memberships" => Tuple(
                                 Enum<1u8>(
                                     Tuple(
                                         Enum<1u8>(),
@@ -1371,7 +1371,7 @@ PUBLISH_PACKAGE_ADVANCED
                                         161u8
                                     )
                                 ),
-                                "Repository_merge_membership"
+                                "Repository_merge_memberships"
                             ),
                             "redeem_thanks_token" => Tuple(
                                 Enum<1u8>(
@@ -1432,7 +1432,7 @@ PUBLISH_PACKAGE_ADVANCED
                         ),
                         "mint_creator_badge" => Enum<0u8>(),
                         "merge_trophies" => Enum<0u8>(),
-                        "merge_membership" => Enum<0u8>(),
+                        "merge_memberships" => Enum<0u8>(),
                         "redeem_thanks_token" => Enum<0u8>(),
                         "close_repository" => Enum<0u8>()
                     )
@@ -1453,7 +1453,7 @@ PUBLISH_PACKAGE_ADVANCED
                                 "new_collection_component_and_badge" => Enum<0u8>(),
                                 "mint_creator_badge" => Enum<0u8>(),
                                 "merge_trophies" => Enum<0u8>(),
-                                "merge_membership" => Enum<0u8>(),
+                                "merge_memberships" => Enum<0u8>(),
                                 "redeem_thanks_token" => Enum<0u8>(),
                                 "close_repository" => Enum<2u8>(
                                     Array<String>(
@@ -1467,7 +1467,7 @@ PUBLISH_PACKAGE_ADVANCED
             )
         )
     )
-    Blob("6c59cd309b6d4f1aeb8ac9df1d03a79a4961f4d3226d319e7fc8adddda81e011")
+    Blob("e238df9c04c8e10b65e4dd0bdadc6112f4e749fd866c4c3404c54cd678dfac15")
     Map<String, Tuple>()
     Enum<0u8>()
 ;

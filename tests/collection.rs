@@ -1,6 +1,6 @@
 #[path = "./common.rs"]
 mod common;
-use common::{execute_manifest, mint_collection_owner_badge, new_account, new_runner};
+use common::{execute_manifest, mint_creator_badge, new_account, new_runner};
 
 use backeum_blueprint::data::{Membership, Trophy};
 use scrypto::prelude::*;
@@ -18,7 +18,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -30,11 +30,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id,
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -175,7 +175,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -187,11 +187,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id,
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -395,7 +395,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -407,11 +407,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id,
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -472,7 +472,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -484,11 +484,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -570,7 +570,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -582,11 +582,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id,
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -723,7 +723,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -735,11 +735,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id,
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -915,7 +915,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         let donation_account = new_account(&mut base.test_runner);
@@ -926,11 +926,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -1044,7 +1044,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create donation account
@@ -1056,11 +1056,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -1106,7 +1106,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         // Create collection components
@@ -1115,11 +1115,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -1185,7 +1185,7 @@ mod tests {
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
         {
-            creator_badge_badge_id = mint_collection_owner_badge(&mut base, &creator_badge_account);
+            creator_badge_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
         }
 
         let donation_account = new_account(&mut base.test_runner);
@@ -1196,11 +1196,11 @@ mod tests {
                 creator_badge_account.wallet_address,
                 creator_badge_badge_id.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -1282,8 +1282,7 @@ mod tests {
         let creator_badge_account_1 = new_account(&mut base.test_runner);
         let creator_badge_badge_id_1: NonFungibleGlobalId;
         {
-            creator_badge_badge_id_1 =
-                mint_collection_owner_badge(&mut base, &creator_badge_account_1);
+            creator_badge_badge_id_1 = mint_creator_badge(&mut base, &creator_badge_account_1);
         }
 
         // Create two collection components
@@ -1292,11 +1291,11 @@ mod tests {
                 creator_badge_account_1.wallet_address,
                 creator_badge_badge_id_1.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it
@@ -1344,16 +1343,14 @@ mod tests {
         let creator_badge_account_1 = new_account(&mut base.test_runner);
         let creator_badge_badge_id_1: NonFungibleGlobalId;
         {
-            creator_badge_badge_id_1 =
-                mint_collection_owner_badge(&mut base, &creator_badge_account_1);
+            creator_badge_badge_id_1 = mint_creator_badge(&mut base, &creator_badge_account_1);
         }
 
         // Create an component admin account
         let creator_badge_account_2 = new_account(&mut base.test_runner);
         let creator_badge_badge_id_2: NonFungibleGlobalId;
         {
-            creator_badge_badge_id_2 =
-                mint_collection_owner_badge(&mut base, &creator_badge_account_2);
+            creator_badge_badge_id_2 = mint_creator_badge(&mut base, &creator_badge_account_2);
         }
 
         // Create two collection components
@@ -1362,11 +1359,11 @@ mod tests {
                 creator_badge_account_1.wallet_address,
                 creator_badge_badge_id_1.clone(),
             )
-            .pop_from_auth_zone("collection_owner_badge_proof")
+            .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("collection_owner_badge_proof"),),
+                |lookup| (lookup.proof("creator_badge_proof"),),
             );
 
         // Execute it

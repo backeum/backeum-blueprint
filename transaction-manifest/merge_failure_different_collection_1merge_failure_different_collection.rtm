@@ -7,23 +7,23 @@ CALL_METHOD
     )
 ;
 POP_FROM_AUTH_ZONE
-    Proof("collection_owner_badge_proof")
+    Proof("creator_badge_proof")
 ;
 CLONE_PROOF
-    Proof("collection_owner_badge_proof")
-    Proof("collection_owner_badge_proof_1")
+    Proof("creator_badge_proof")
+    Proof("creator_badge_proof_1")
 ;
 CLONE_PROOF
-    Proof("collection_owner_badge_proof")
-    Proof("collection_owner_badge_proof_2")
+    Proof("creator_badge_proof")
+    Proof("creator_badge_proof_2")
 ;
 CALL_METHOD
     Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
     "new_collection_component"
-    Proof("collection_owner_badge_proof_1")
+    Proof("creator_badge_proof_1")
 ;
 CALL_METHOD
     Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
     "new_collection_component"
-    Proof("collection_owner_badge_proof_2")
+    Proof("creator_badge_proof_2")
 ;
