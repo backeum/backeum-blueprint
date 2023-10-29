@@ -104,7 +104,7 @@ mod repository {
                 init {
                     "name" => "Backeum Creator Badges", locked;
                     "description" => "Digital emblem celebrating a creator's crowdfunding journey. It evolves with cumulative donations, embodying progress and community support. It's a symbol of encouragement, encapsulating the artist-backer bond in the digital age.", locked;
-                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/badge.png")), updatable;
+                    "icon_url" => UncheckedUrl::of(format!("{}{}", base_path.clone(), "/bucket/assets/wallet-assets/creator.png")), updatable;
                     "tags" => vec!["backeum", "badge"], locked;
                     "info_url" => UncheckedUrl::of(base_path.clone()), locked;
                     "dapp_definition" => dapp_definition_address, locked;
