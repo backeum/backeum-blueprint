@@ -431,18 +431,31 @@ mod repository {
                 assert_eq!(
                     trophy_data.data().info_url,
                     template.info_url,
-                    "The given trophies is not the of the same created date."
+                    "The given trophies is not the of the same info url."
                 );
 
                 assert_eq!(
                     trophy_data.data().name,
                     template.name,
-                    "The given trophies is not the of the same created date."
+                    "The given trophies is not the of the same name."
                 );
 
-                println!(
-                    "Trophy created: {}",
-                    parse_created_string(trophy_data.data().created)
+                assert_eq!(
+                    trophy_data.data().creator,
+                    template.creator,
+                    "The given trophies is not the of the same creator id."
+                );
+
+                assert_eq!(
+                    trophy_data.data().creator_name,
+                    template.creator_name,
+                    "The given trophies is not the of the same creator name."
+                );
+
+                assert_eq!(
+                    trophy_data.data().creator_slug,
+                    template.creator_slug,
+                    "The given trophies is not the of the same creator slug."
                 );
 
                 let trophy_date = parse_created_string(trophy_data.data().created);
@@ -510,19 +523,37 @@ mod repository {
                 assert_eq!(
                     membership_data.data().creator,
                     template.creator,
-                    "The given trophies is not the of the same collection id."
+                    "The given memberships is not the of the same collection id."
                 );
 
                 assert_eq!(
                     membership_data.data().info_url,
                     template.info_url,
-                    "The given trophies is not the of the same created date."
+                    "The given memberships is not the of the same created date."
                 );
 
                 assert_eq!(
                     membership_data.data().name,
                     template.name,
-                    "The given trophies is not the of the same created date."
+                    "The given memberships is not the of the same name."
+                );
+
+                assert_eq!(
+                    membership_data.data().creator,
+                    template.creator,
+                    "The given memberships is not the of the same creator id."
+                );
+
+                assert_eq!(
+                    membership_data.data().creator_name,
+                    template.creator_name,
+                    "The given memberships is not the of the same creator name."
+                );
+
+                assert_eq!(
+                    membership_data.data().creator_slug,
+                    template.creator_slug,
+                    "The given memberships is not the of the same creator slug."
                 );
 
                 let membership_date = parse_created_string(membership_data.data().created);
