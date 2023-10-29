@@ -18,11 +18,11 @@ pub fn generate_membership_url(
     base_path: String,
     donated: Decimal,
     created: String,
-    user_slug: String,
+    creator_slug: String,
 ) -> String {
     format!(
         "{}/nft/membership/{}?donated={}&created={}",
-        base_path, user_slug, donated, created
+        base_path, creator_slug, donated, created
     )
 }
 

@@ -3,6 +3,8 @@ CALL_METHOD
     "new_collection_component_and_badge"
     "Kansuler"
     "kansuler"
+    "Trophy name"
+    "Trophy description"
 ;
 ASSERT_WORKTOP_CONTAINS
     Address("resource_sim1ngxg6dx52hyx4u3gatzt38efkx98q4mwklj70a9s7ympxjacfsa74z")

@@ -34,7 +34,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -114,7 +120,10 @@ mod tests {
 
         assert_eq!(trophy_data.collection_id, result);
 
-        assert_eq!(trophy_data.name, "Trophy: Kansuler");
+        assert_eq!(trophy_data.name, "Trophy name");
+        assert_eq!(trophy_data.description, "Kansulers trophy");
+        assert_eq!(trophy_data.creator_slug, "kansuler");
+        assert_eq!(trophy_data.creator_name, "Kansuler");
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
@@ -162,7 +171,7 @@ mod tests {
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
                 "https://localhost:8080/nft/membership/{}?donated=150&created=1970-01-01",
-                membership_data.user_slug
+                membership_data.creator_slug
             ))
         );
     }
@@ -191,7 +200,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -334,7 +349,10 @@ mod tests {
 
         assert_eq!(trophy_data.collection_id, result);
 
-        assert_eq!(trophy_data.name, "Trophy: Kansuler");
+        assert_eq!(trophy_data.name, "Trophy name");
+        assert_eq!(trophy_data.description, "Kansulers trophy");
+        assert_eq!(trophy_data.creator_slug, "kansuler");
+        assert_eq!(trophy_data.creator_name, "Kansuler");
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
@@ -382,7 +400,7 @@ mod tests {
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
                 "https://localhost:8080/nft/membership/{}?donated=300&created=1970-01-01",
-                membership_data.user_slug
+                membership_data.creator_slug
             ))
         );
     }
@@ -411,7 +429,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -488,7 +512,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -586,7 +616,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -698,7 +734,10 @@ mod tests {
 
         assert_eq!(trophy_data.collection_id, result);
 
-        assert_eq!(trophy_data.name, "Trophy: Kansuler");
+        assert_eq!(trophy_data.name, "Trophy name");
+        assert_eq!(trophy_data.description, "Kansulers trophy");
+        assert_eq!(trophy_data.creator_slug, "kansuler");
+        assert_eq!(trophy_data.creator_name, "Kansuler");
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
@@ -739,7 +778,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -870,7 +915,10 @@ mod tests {
 
         assert_eq!(trophy_data.collection_id, result);
 
-        assert_eq!(trophy_data.name, "Trophy: Kansuler");
+        assert_eq!(trophy_data.name, "Trophy name");
+        assert_eq!(trophy_data.description, "Kansulers trophy");
+        assert_eq!(trophy_data.creator_slug, "kansuler");
+        assert_eq!(trophy_data.creator_name, "Kansuler");
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
@@ -902,7 +950,7 @@ mod tests {
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
                 "https://localhost:8080/nft/membership/{}?donated=300&created=1970-01-01",
-                membership_data.user_slug
+                membership_data.creator_slug
             ))
         );
     }
@@ -930,7 +978,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -1060,7 +1114,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -1119,7 +1179,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -1200,7 +1266,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -1295,7 +1367,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -1363,7 +1441,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it

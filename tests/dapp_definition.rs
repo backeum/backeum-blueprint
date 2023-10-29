@@ -33,7 +33,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it
@@ -144,7 +150,13 @@ mod tests {
             .call_method_with_name_lookup(
                 base.repository_component,
                 "new_collection_component",
-                |lookup| (lookup.proof("creator_badge_proof"),),
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
             );
 
         // Execute it

@@ -270,6 +270,8 @@ mod repository {
         pub fn new_collection_component(
             &mut self,
             creator_badge_proof: Proof,
+            trophy_name: String,
+            trophy_description: String,
         ) -> Global<Collection> {
             if self.closed.is_some() {
                 panic!("This repository is permanently closed.");
@@ -294,8 +296,10 @@ mod repository {
                 creator_resource_manager: self.creator_resource_manager,
                 creator_badge_proof: checked_creator_badge_proof.clone(),
                 minter_badge,
-                user_name: data.user_name,
-                user_slug: data.user_slug,
+                creator_name: data.creator_name,
+                creator_slug: data.creator_slug,
+                trophy_name,
+                trophy_description,
                 dapp_definition_address: self.dapp_definition_address,
             })
         }
@@ -307,8 +311,10 @@ mod repository {
         // owner badge that the user can use to gain ownership of the collection.
         pub fn new_collection_component_and_badge(
             &mut self,
-            user_name: String,
-            user_slug: String,
+            creator_name: String,
+            creator_slug: String,
+            trophy_name: String,
+            trophy_description: String,
         ) -> (Global<Collection>, Bucket) {
             if self.closed.is_some() {
                 panic!("This repository is permanently closed.");
@@ -328,14 +334,14 @@ mod repository {
             let creator_badge = self
                 .creator_resource_manager
                 .mint_ruid_non_fungible::<Creator>(Creator {
-                    name: format!("Backeum Owner Badge: {}", user_name.clone(),),
+                    name: format!("Backeum Owner Badge: {}", creator_name.clone(),),
                     description:
                         "Grants ownership of Backeum collection components and membership badges"
                             .to_string(),
-                    funded: dec!(0),
-                    user_name: user_name.clone(),
-                    user_slug: user_slug.clone(),
+                    creator_name: creator_name.clone(),
+                    creator_slug: creator_slug.clone(),
                     created: created.clone(),
+                    funded: dec!(0),
                     key_image_url: UncheckedUrl::of(generate_creator_url(
                         domain.to_string(),
                         dec!(0),
@@ -357,8 +363,10 @@ mod repository {
                         .create_proof_of_all()
                         .check(self.creator_resource_manager.address()),
                     minter_badge,
-                    user_name,
-                    user_slug,
+                    creator_name,
+                    creator_slug,
+                    trophy_name,
+                    trophy_description,
                     dapp_definition_address: self.dapp_definition_address,
                 }),
                 creator_badge,
@@ -367,7 +375,7 @@ mod repository {
 
         // Mints a new collection owner badge that the user can use to gain ownership of a
         // collection. Ownership badges are free to mint and burn.
-        pub fn mint_creator_badge(&mut self, user_name: String, user_slug: String) -> Bucket {
+        pub fn mint_creator_badge(&mut self, creator_name: String, creator_slug: String) -> Bucket {
             // Get the domain name used from the trophy resource manager.
             let domain: String = self
                 .trophy_resource_manager
@@ -381,14 +389,14 @@ mod repository {
 
             self.creator_resource_manager
                 .mint_ruid_non_fungible::<Creator>(Creator {
-                    name: format!("Backeum Owner Badge: {}", user_name.clone(),),
+                    name: format!("Backeum Owner Badge: {}", creator_name.clone(),),
                     description:
                         "Grants ownership of Backeum collection components and membership badges"
                             .to_string(),
-                    funded: dec!(0),
-                    user_name: user_name.clone(),
-                    user_slug: user_slug.clone(),
+                    creator_name: creator_name.clone(),
+                    creator_slug: creator_slug.clone(),
                     created: created.clone(),
+                    funded: dec!(0),
                     key_image_url: UncheckedUrl::of(generate_creator_url(
                         domain.to_string(),
                         dec!(0),
@@ -459,6 +467,10 @@ mod repository {
             let created = generate_created_string(earliest_created);
             let new_trophy_data = Trophy {
                 name: template.name,
+                description: template.description,
+                creator: template.creator,
+                creator_name: template.creator_name,
+                creator_slug: template.creator_slug,
                 info_url: template.info_url,
                 collection_id: template.collection_id.clone(),
                 created: created.clone(),
@@ -536,17 +548,17 @@ mod repository {
             let new_membership_data = Membership {
                 name: template.name,
                 description: template.description,
-                info_url: template.info_url,
-                user_name: template.user_name.clone(),
-                user_slug: template.user_slug.clone(),
                 creator: template.creator.clone(),
-                donated,
+                creator_name: template.creator_name.clone(),
+                creator_slug: template.creator_slug.clone(),
                 created: created.clone(),
+                info_url: template.info_url,
+                donated,
                 key_image_url: UncheckedUrl::of(generate_membership_url(
                     domain.to_string(),
                     donated,
                     created.clone(),
-                    template.user_slug.clone(),
+                    template.creator_slug.clone(),
                 )),
             };
 

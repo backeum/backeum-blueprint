@@ -12,8 +12,10 @@ pub struct CollectionArg {
     pub repository_owner_access_badge_address: ResourceAddress,
     pub creator_badge_proof: CheckedProof,
     pub minter_badge: Bucket,
-    pub user_name: String,
-    pub user_slug: String,
+    pub creator_name: String,
+    pub creator_slug: String,
+    pub trophy_name: String,
+    pub trophy_description: String,
     pub dapp_definition_address: GlobalAddress,
 }
 
@@ -59,10 +61,16 @@ mod collection {
         fees: Vault,
 
         // Specific user name that owns this component
-        user_name: String,
+        creator_name: String,
 
         // Specific user slug that owns this component
-        user_slug: String,
+        creator_slug: String,
+
+        // Name of the trophy
+        trophy_name: String,
+
+        // Description of the trophy
+        trophy_description: String,
 
         // Which collection this collection component is for
         collection_id: String,
@@ -91,14 +99,16 @@ mod collection {
                 minter_badge: Vault::with_bucket(arg.minter_badge),
                 donations: Vault::new(XRD),
                 fees: Vault::new(XRD),
-                user_name: arg.user_name,
-                user_slug: arg.user_slug,
                 collection_id,
                 creator_badge_global_id: creator_badge_global_id.clone(),
                 trophy_resource_manager: arg.trophy_resource_manager,
                 thanks_token_resource_manager: arg.thanks_token_resource_manager,
                 membership_resource_manager: arg.membership_resource_manager,
                 creator_resource_manager: arg.creator_resource_manager,
+                creator_name: arg.creator_name,
+                creator_slug: arg.creator_slug,
+                trophy_name: arg.trophy_name,
+                trophy_description: arg.trophy_description,
                 closed: None,
             }
             .instantiate()
@@ -173,19 +183,20 @@ mod collection {
             );
 
             let data = Membership {
-                name: format!("Membership: {}", self.user_name),
-                description: format!("Digital emblem celebrating {}'s crowdfunding journey. It evolves with cumulative donations. It's a symbol of encouragement, encapsulating the artist-backer bond in the digital age.", self.user_name).to_string(),
-                info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.user_slug)),
-                user_name: self.user_name.clone(),
-                user_slug: self.user_slug.clone(),
-                donated,
-                created: created.clone(),
+                name: format!("Membership: {}", self.creator_name),
+                description: format!("Digital emblem celebrating {}'s crowdfunding journey. It evolves with cumulative donations. It's a symbol of encouragement, encapsulating the artist-backer bond in the digital age.", self.creator_name).to_string(),
+
                 creator: self.creator_badge_global_id.clone(),
+                creator_name: self.creator_name.clone(),
+                creator_slug: self.creator_slug.clone(),
+                info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.creator_slug)),
+                created: created.clone(),
+                donated,
                 key_image_url: UncheckedUrl::of(generate_membership_url(
                     domain.to_string(),
                     donated,
                     created,
-                    self.user_slug.to_string(),
+                    self.creator_slug.to_string(),
                 )),
             };
 
@@ -209,7 +220,7 @@ mod collection {
                 .get_non_fungible_data(&nft_id);
 
             assert_eq!(
-                data.user_slug, self.user_slug,
+                data.creator_slug, self.creator_slug,
                 "The given membership does not match this component."
             );
 
@@ -224,7 +235,7 @@ mod collection {
                 domain.to_string(),
                 data.donated,
                 data.created,
-                self.user_slug.clone(),
+                self.creator_slug.clone(),
             ));
 
             // Update NF with new data
@@ -254,8 +265,12 @@ mod collection {
 
             // Create the trophy data.
             let data = Trophy {
-                name: format!("Trophy: {}", self.user_name),
-                info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.user_slug)),
+                name: self.trophy_name.clone(),
+                description: self.trophy_description.clone(),
+                creator: self.creator_badge_global_id.clone(),
+                creator_name: self.creator_name.clone(),
+                creator_slug: self.creator_slug.clone(),
+                info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.creator_slug)),
                 collection_id: self.collection_id.clone(),
                 created: created.clone(),
                 donated: amount,

@@ -3,9 +3,13 @@ use scrypto::prelude::*;
 #[derive(ScryptoSbor, NonFungibleData, Clone)]
 pub struct Trophy {
     pub name: String,
-    pub created: String,
+    pub description: String,
+    pub creator: NonFungibleGlobalId,
+    pub creator_name: String,
+    pub creator_slug: String,
     pub info_url: UncheckedUrl,
     pub collection_id: String,
+    pub created: String,
 
     #[mutable]
     pub donated: Decimal,
@@ -17,10 +21,10 @@ pub struct Trophy {
 pub struct Membership {
     pub name: String,
     pub description: String,
-    pub info_url: UncheckedUrl,
-    pub user_name: String,
-    pub user_slug: String,
     pub creator: NonFungibleGlobalId,
+    pub creator_name: String,
+    pub creator_slug: String,
+    pub info_url: UncheckedUrl,
     pub created: String,
 
     #[mutable]
@@ -34,8 +38,8 @@ pub struct Membership {
 pub struct Creator {
     pub name: String,
     pub description: String,
-    pub user_name: String,
-    pub user_slug: String,
+    pub creator_name: String,
+    pub creator_slug: String,
     pub created: String,
 
     #[mutable]
