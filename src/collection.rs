@@ -332,10 +332,6 @@ mod collection {
                 panic!("This collection is permanently closed.");
             }
 
-            if tokens.amount() < dec!(50) {
-                panic!("Minimum donation is 50 XRD");
-            }
-
             // Push a proof of minter badge to the local auth zone for minting a trophy.
             LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
 
@@ -365,10 +361,6 @@ mod collection {
         ) -> (Bucket, Bucket) {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
-            }
-
-            if tokens.amount() < dec!(50) {
-                panic!("Minimum donation is 50 XRD");
             }
 
             // Push a proof of minter badge to the local auth zone for minting a trophy.
@@ -411,10 +403,6 @@ mod collection {
                 panic!("This collection is permanently closed.");
             }
 
-            if tokens.amount() < dec!(50) {
-                panic!("Minimum donation is 50 XRD");
-            }
-
             // Push a proof of minter badge to the local auth zone for minting a trophy.
             LocalAuthZone::push(self.minter_badge.as_fungible().create_proof_of_amount(1));
 
@@ -453,10 +441,6 @@ mod collection {
         ) -> Bucket {
             if self.closed.is_some() {
                 panic!("This collection is permanently closed.");
-            }
-
-            if tokens.amount() < dec!(50) {
-                panic!("Minimum donation is 50 XRD");
             }
 
             // Push a proof of minter badge to the local auth zone for minting a trophy.
