@@ -15,7 +15,7 @@ CALL_METHOD
     Bucket("donation_amount_1")
 ;
 ASSERT_WORKTOP_CONTAINS
-    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
     Decimal("1")
 ;
 TAKE_FROM_WORKTOP
@@ -24,25 +24,25 @@ TAKE_FROM_WORKTOP
     Bucket("donation_amount_2")
 ;
 CALL_METHOD
-    Address("component_sim1cpqqm643dms23n2k3ckf6vxch228fl2y87qdf5arstgexnvvqm5ncu")
+    Address("component_sim1cqnwaxdur630entzzazcwl3gc275daxgc0zavt7ykwchmqkdyrtqzy")
     "donate_mint"
     Bucket("donation_amount_2")
 ;
 ASSERT_WORKTOP_CONTAINS
-    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
     Decimal("2")
 ;
 TAKE_ALL_FROM_WORKTOP
-    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
-    Bucket("trophies")
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Bucket("memberships")
 ;
 CALL_METHOD
     Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
-    "merge_trophies"
-    Bucket("trophies")
+    "merge_memberships"
+    Bucket("memberships")
 ;
 ASSERT_WORKTOP_CONTAINS
-    Address("resource_sim1n28e3x3pcnaqfj405r5tdn22hm37yqwzv4vthux5z0st0w8tpx93l3")
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
     Decimal("1")
 ;
 ASSERT_WORKTOP_CONTAINS

@@ -90,13 +90,13 @@ pub fn mint_creator_badge(base: &mut TestRunner, account: &Account) -> NonFungib
         .test_runner
         .get_component_vaults(account.wallet_address, base.creator_badge_resource_address);
 
-    let (_, mut iterator) = base
+    let (_, iterator) = base
         .test_runner
         .inspect_non_fungible_vault(creator_badge_vault[0])
         .unwrap();
 
     // Get the collection owner badge
-    let creator_badge_id = iterator.next().unwrap();
+    let creator_badge_id = iterator.last().unwrap();
 
     // Return global ID
     NonFungibleGlobalId::new(
@@ -121,7 +121,16 @@ pub struct TestRunner {
 
 #[cfg(test)]
 pub fn new_runner() -> TestRunner {
-    let mut test_runner = TestRunnerBuilder::new().without_trace().build();
+    let mut genesis = CustomGenesis::default(
+        Epoch::of(1u64),
+        CustomGenesis::default_consensus_manager_config(),
+    );
+
+    genesis.initial_time_ms = 1699093188267; // 04 Nov 2023
+    let mut test_runner = TestRunnerBuilder::new()
+        .with_custom_genesis(genesis)
+        .without_trace()
+        .build();
 
     // Create an owner account
     let owner_account = new_account(&mut test_runner);

@@ -1,0 +1,36 @@
+CALL_METHOD
+    Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
+    "create_proof_of_non_fungibles"
+    Address("resource_sim1ngxg6dx52hyx4u3gatzt38efkx98q4mwklj70a9s7ympxjacfsa74z")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{5bbf7ed683eeabc2-c6dfcd0800a833bb-240fe6bf0e5b2b38-c7e92e5850463c9e}")
+    )
+;
+POP_FROM_AUTH_ZONE
+    Proof("creator_badge_proof_1")
+;
+CALL_METHOD
+    Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
+    "new_collection_component"
+    Proof("creator_badge_proof_1")
+    "Trophy name"
+    "Kansulers trophy"
+;
+CALL_METHOD
+    Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
+    "create_proof_of_non_fungibles"
+    Address("resource_sim1ngxg6dx52hyx4u3gatzt38efkx98q4mwklj70a9s7ympxjacfsa74z")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{88187e7fec84a59c-9713f20d4bdd245a-90c9c04347db595f-07a038d384ce12a4}")
+    )
+;
+POP_FROM_AUTH_ZONE
+    Proof("creator_badge_proof_2")
+;
+CALL_METHOD
+    Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
+    "new_collection_component"
+    Proof("creator_badge_proof_2")
+    "Trophy name"
+    "Kansulers trophy"
+;

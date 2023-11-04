@@ -251,11 +251,29 @@ PUBLISH_PACKAGE_ADVANCED
                                         Enum<0u8>(
                                             12u8
                                         ),
+                                        Enum<1u8>(
+                                            17u64
+                                        ),
                                         Enum<0u8>(
                                             192u8
                                         ),
                                         Enum<0u8>(
                                             198u8
+                                        )
+                                    )
+                                ),
+                                Enum<13u8>(
+                                    Enum<1u8>(
+                                        18u64
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            192u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
                                         )
                                     )
                                 ),
@@ -284,6 +302,9 @@ PUBLISH_PACKAGE_ADVANCED
                                         ),
                                         Enum<0u8>(
                                             12u8
+                                        ),
+                                        Enum<1u8>(
+                                            17u64
                                         ),
                                         Enum<0u8>(
                                             192u8
@@ -512,8 +533,26 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "creator_slug",
                                                 "info_url",
                                                 "created",
+                                                "transactions",
                                                 "donated",
                                                 "key_image_url"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<0u8>(),
+                                    Enum<0u8>()
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "Transaction"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "amount",
+                                                "created"
                                             )
                                         )
                                     )
@@ -533,6 +572,7 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "info_url",
                                                 "collection_id",
                                                 "created",
+                                                "transactions",
                                                 "donated",
                                                 "key_image_url"
                                             )
@@ -558,6 +598,8 @@ PUBLISH_PACKAGE_ADVANCED
                                         )
                                     )
                                 ),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
@@ -595,8 +637,11 @@ PUBLISH_PACKAGE_ADVANCED
                         "Membership" => Enum<1u8>(
                             16u64
                         ),
+                        "Transaction" => Enum<1u8>(
+                            18u64
+                        ),
                         "Trophy" => Enum<1u8>(
-                            17u64
+                            19u64
                         )
                     ),
                     Tuple(
@@ -992,11 +1037,29 @@ PUBLISH_PACKAGE_ADVANCED
                                         Enum<0u8>(
                                             12u8
                                         ),
+                                        Enum<1u8>(
+                                            15u64
+                                        ),
                                         Enum<0u8>(
                                             192u8
                                         ),
                                         Enum<0u8>(
                                             198u8
+                                        )
+                                    )
+                                ),
+                                Enum<13u8>(
+                                    Enum<1u8>(
+                                        16u64
+                                    )
+                                ),
+                                Enum<14u8>(
+                                    Array<Enum>(
+                                        Enum<0u8>(
+                                            192u8
+                                        ),
+                                        Enum<0u8>(
+                                            12u8
                                         )
                                     )
                                 ),
@@ -1025,6 +1088,9 @@ PUBLISH_PACKAGE_ADVANCED
                                         ),
                                         Enum<0u8>(
                                             12u8
+                                        ),
+                                        Enum<1u8>(
+                                            15u64
                                         ),
                                         Enum<0u8>(
                                             192u8
@@ -1228,8 +1294,26 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "creator_slug",
                                                 "info_url",
                                                 "created",
+                                                "transactions",
                                                 "donated",
                                                 "key_image_url"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Tuple(
+                                    Enum<0u8>(),
+                                    Enum<0u8>()
+                                ),
+                                Tuple(
+                                    Enum<1u8>(
+                                        "Transaction"
+                                    ),
+                                    Enum<1u8>(
+                                        Enum<0u8>(
+                                            Array<String>(
+                                                "amount",
+                                                "created"
                                             )
                                         )
                                     )
@@ -1249,6 +1333,7 @@ PUBLISH_PACKAGE_ADVANCED
                                                 "info_url",
                                                 "collection_id",
                                                 "created",
+                                                "transactions",
                                                 "donated",
                                                 "key_image_url"
                                             )
@@ -1286,6 +1371,8 @@ PUBLISH_PACKAGE_ADVANCED
                                 Enum<0u8>(),
                                 Enum<0u8>(),
                                 Enum<0u8>(),
+                                Enum<0u8>(),
+                                Enum<0u8>(),
                                 Enum<0u8>()
                             )
                         )
@@ -1312,8 +1399,11 @@ PUBLISH_PACKAGE_ADVANCED
                         "Membership" => Enum<1u8>(
                             14u64
                         ),
+                        "Transaction" => Enum<1u8>(
+                            16u64
+                        ),
                         "Trophy" => Enum<1u8>(
-                            15u64
+                            17u64
                         )
                     ),
                     Tuple(
@@ -1531,7 +1621,7 @@ PUBLISH_PACKAGE_ADVANCED
             )
         )
     )
-    Blob("6fc09716c36b19cbf5fa6ccefd5d78158f853fb06e9ec6a7c8a6d222408705c0")
+    Blob("853cf8aa66d98b41234e28e2512e568b1ef4c78f1d6a1ef4c2e1cde1561e2a10")
     Map<String, Tuple>()
     Enum<0u8>()
 ;

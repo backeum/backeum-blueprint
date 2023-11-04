@@ -293,6 +293,8 @@ mod tests {
     fn merge_trophies_success() {
         let mut base = new_runner();
 
+        base.test_runner
+            .advance_to_round_at_timestamp(Round::of(50), 1699093188267);
         // Create an component admin account
         let creator_badge_account = new_account(&mut base.test_runner);
         let creator_badge_badge_id: NonFungibleGlobalId;
@@ -415,13 +417,118 @@ mod tests {
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(trophy_data.created, "1970-01-01");
+        assert_eq!(trophy_data.created, "2023-11-04");
         assert_eq!(trophy_data.donated, dec!(500));
+        assert_eq!(trophy_data.transactions.len(), 2);
+        trophy_data.transactions.iter().for_each(|transaction| {
+            assert_eq!(transaction.amount, dec!(250));
+            assert_eq!(transaction.created, "2023-11-04");
+        });
 
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=500&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=500&created=2023-11-04",
+                trophy_data.collection_id
+            ))
+        );
+
+        base.test_runner
+            .advance_to_round_at_timestamp(Round::of(2), 1699142400000); // 2023-11-05
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(500))
+            .take_from_worktop(XRD, dec!(500), "donation_amount_1")
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_1"),)
+            })
+            .withdraw_non_fungibles_from_account(
+                donation_account.wallet_address,
+                base.trophy_resource_address,
+                vec![trophy_id.clone()],
+            )
+            .assert_worktop_contains(base.trophy_resource_address, dec!(2))
+            .take_all_from_worktop(base.trophy_resource_address, "trophies")
+            .call_method_with_name_lookup(base.repository_component, "merge_trophies", |lookup| {
+                (lookup.bucket("trophies"),)
+            })
+            .assert_worktop_contains(base.trophy_resource_address, dec!(1))
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(500))
+            .deposit_batch(donation_account.wallet_address);
+
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "merge_success_3",
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_success();
+        assert_eq!(
+            base.test_runner.get_component_balance(
+                donation_account.wallet_address,
+                base.trophy_resource_address
+            ),
+            dec!(1)
+        );
+        assert_eq!(
+            base.test_runner
+                .get_component_balance(donation_account.wallet_address, XRD),
+            dec!(9000)
+        );
+
+        let trophy_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.trophy_resource_address,
+        );
+
+        let trophy_id: NonFungibleLocalId;
+        {
+            let mut trophies = base
+                .test_runner
+                .inspect_non_fungible_vault(trophy_vault[0])
+                .unwrap()
+                .1;
+
+            trophy_id = trophies.next().unwrap().clone();
+        }
+
+        let trophy_data: Trophy = base
+            .test_runner
+            .get_non_fungible_data(base.trophy_resource_address, trophy_id.clone());
+
+        let result = AddressBech32Encoder::new(&NetworkDefinition::simulator())
+            .encode(&collection_component.to_vec())
+            .unwrap();
+
+        assert_eq!(trophy_data.collection_id, result);
+
+        assert_eq!(trophy_data.name, "Trophy name");
+        assert_eq!(trophy_data.description, "Kansulers trophy");
+        assert_eq!(trophy_data.creator_slug, "kansuler");
+        assert_eq!(trophy_data.creator_name, "Kansuler");
+        assert_eq!(
+            trophy_data.info_url,
+            UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
+        );
+        assert_eq!(trophy_data.created, "2023-11-04");
+        assert_eq!(trophy_data.donated, dec!(1000));
+        assert_eq!(trophy_data.transactions.len(), 3);
+        assert_eq!(trophy_data.transactions[0].amount, dec!(250));
+        assert_eq!(trophy_data.transactions[0].created, "2023-11-04");
+        assert_eq!(trophy_data.transactions[1].amount, dec!(250));
+        assert_eq!(trophy_data.transactions[1].created, "2023-11-04");
+        assert_eq!(trophy_data.transactions[2].amount, dec!(500));
+        assert_eq!(trophy_data.transactions[2].created, "2023-11-05");
+
+        assert_eq!(
+            trophy_data.key_image_url,
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/collection/{}?donated=1000&created=2023-11-04",
                 trophy_data.collection_id
             ))
         );
@@ -549,20 +656,121 @@ mod tests {
             membership_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(membership_data.created, "1970-01-01");
+        assert_eq!(membership_data.created, "2023-11-04");
         assert_eq!(membership_data.donated, dec!(500));
+        assert_eq!(membership_data.transactions.len(), 2);
+        membership_data.transactions.iter().for_each(|transaction| {
+            assert_eq!(transaction.amount, dec!(250));
+            assert_eq!(transaction.created, "2023-11-04");
+        });
 
         assert_eq!(
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/membership/{}?donated=500&created=1970-01-01",
+                "https://localhost:8080/nft/membership/{}?donated=500&created=2023-11-04",
+                membership_data.creator_slug
+            ))
+        );
+
+        base.test_runner
+            .advance_to_round_at_timestamp(Round::of(2), 1699142400000); // 2023-11-05
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(500))
+            .take_from_worktop(XRD, dec!(500), "donation_amount_1")
+            .call_method_with_name_lookup(collection_component, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_1"),)
+            })
+            .withdraw_non_fungibles_from_account(
+                donation_account.wallet_address,
+                base.membership_resource_address,
+                vec![membership_id.clone()],
+            )
+            .assert_worktop_contains(base.membership_resource_address, dec!(2))
+            .take_all_from_worktop(base.membership_resource_address, "memberships")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "merge_memberships",
+                |lookup| (lookup.bucket("memberships"),),
+            )
+            .assert_worktop_contains(base.membership_resource_address, dec!(1))
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(500))
+            .deposit_batch(donation_account.wallet_address);
+
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "merge_membership_success_3",
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_success();
+        assert_eq!(
+            base.test_runner.get_component_balance(
+                donation_account.wallet_address,
+                base.membership_resource_address
+            ),
+            dec!(1)
+        );
+        assert_eq!(
+            base.test_runner
+                .get_component_balance(donation_account.wallet_address, XRD),
+            dec!(9000)
+        );
+
+        let membership_vault = base.test_runner.get_component_vaults(
+            donation_account.wallet_address,
+            base.membership_resource_address,
+        );
+
+        let membership_id: NonFungibleLocalId;
+        {
+            let mut memberships = base
+                .test_runner
+                .inspect_non_fungible_vault(membership_vault[0])
+                .unwrap()
+                .1;
+
+            membership_id = memberships.next().unwrap().clone();
+        }
+
+        let membership_data: Membership = base
+            .test_runner
+            .get_non_fungible_data(base.membership_resource_address, membership_id.clone());
+
+        assert_eq!(membership_data.creator_slug, "kansuler");
+        assert_eq!(membership_data.creator_name, "Kansuler");
+
+        assert_eq!(membership_data.name, "Membership: Kansuler");
+        assert_eq!(
+            membership_data.info_url,
+            UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
+        );
+        assert_eq!(membership_data.created, "2023-11-04");
+        assert_eq!(membership_data.donated, dec!(1000));
+        assert_eq!(membership_data.transactions.len(), 3);
+        assert_eq!(membership_data.transactions[0].amount, dec!(250));
+        assert_eq!(membership_data.transactions[0].created, "2023-11-04");
+        assert_eq!(membership_data.transactions[1].amount, dec!(250));
+        assert_eq!(membership_data.transactions[1].created, "2023-11-04");
+        assert_eq!(membership_data.transactions[2].amount, dec!(500));
+        assert_eq!(membership_data.transactions[2].created, "2023-11-05");
+
+        assert_eq!(
+            membership_data.key_image_url,
+            UncheckedUrl::of(format!(
+                "https://localhost:8080/nft/membership/{}?donated=1000&created=2023-11-04",
                 membership_data.creator_slug
             ))
         );
     }
 
     #[test]
-    fn merge_failure_different_collection() {
+    fn merge_trophies_failure_different_collection() {
         let mut base = new_runner();
 
         // Create an component admin account
@@ -611,7 +819,7 @@ mod tests {
         let receipt = execute_manifest(
             &mut base.test_runner,
             manifest,
-            "merge_failure_different_collection_1merge_failure_different_collection",
+            "merge_trophies_failure_different_collection_1merge_failure_different_collection",
             vec![NonFungibleGlobalId::from_public_key(
                 &creator_badge_account.public_key,
             )],
@@ -646,7 +854,129 @@ mod tests {
         let receipt = execute_manifest(
             &mut base.test_runner,
             manifest,
-            "merge_failure_different_collection_2",
+            "merge_trophies_failure_different_collection_2",
+            vec![NonFungibleGlobalId::from_public_key(
+                &donation_account.public_key,
+            )],
+            true,
+        );
+
+        receipt.expect_commit_failure();
+
+        assert_eq!(
+            base.test_runner.get_component_balance(
+                donation_account.wallet_address,
+                base.trophy_resource_address
+            ),
+            dec!(0)
+        );
+        assert_eq!(
+            base.test_runner
+                .get_component_balance(donation_account.wallet_address, XRD),
+            dec!(10000)
+        );
+    }
+
+    #[test]
+    fn merge_memberships_failure_different_creator() {
+        let mut base = new_runner();
+
+        // Create an component admin account
+        let creator_badge_account = new_account(&mut base.test_runner);
+        let creator_badge_1_badge_id: NonFungibleGlobalId;
+        {
+            creator_badge_1_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
+        }
+        let creator_badge_2_badge_id: NonFungibleGlobalId;
+        {
+            creator_badge_2_badge_id = mint_creator_badge(&mut base, &creator_badge_account);
+        }
+
+        assert_ne!(
+            creator_badge_1_badge_id.local_id().to_string(),
+            creator_badge_2_badge_id.local_id().to_string()
+        );
+
+        // Create donation account
+        let donation_account = new_account(&mut base.test_runner);
+
+        // Create two collection components
+        let manifest = ManifestBuilder::new()
+            .create_proof_from_account_of_non_fungible(
+                creator_badge_account.wallet_address,
+                creator_badge_1_badge_id,
+            )
+            .pop_from_auth_zone("creator_badge_proof_1")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "new_collection_component",
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof_1"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
+            )
+            .create_proof_from_account_of_non_fungible(
+                creator_badge_account.wallet_address,
+                creator_badge_2_badge_id,
+            )
+            .pop_from_auth_zone("creator_badge_proof_2")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "new_collection_component",
+                |lookup| {
+                    (
+                        lookup.proof("creator_badge_proof_2"),
+                        "Trophy name",
+                        "Kansulers trophy",
+                    )
+                },
+            );
+
+        // Execute it
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "merge_memberships_failure_different_creator_1",
+            vec![NonFungibleGlobalId::from_public_key(
+                &creator_badge_account.public_key,
+            )],
+            true,
+        );
+
+        // Get the resource address
+        let collection_component_1 = receipt.expect_commit_success().new_component_addresses()[0];
+        let collection_component_2 = receipt.expect_commit_success().new_component_addresses()[1];
+
+        // Donate and mint trophy
+        let manifest = ManifestBuilder::new()
+            .withdraw_from_account(donation_account.wallet_address, XRD, dec!(500))
+            .take_from_worktop(XRD, dec!(250), "donation_amount_1")
+            .call_method_with_name_lookup(collection_component_1, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_1"),)
+            })
+            .assert_worktop_contains(base.membership_resource_address, dec!(1))
+            .take_from_worktop(XRD, dec!(250), "donation_amount_2")
+            .call_method_with_name_lookup(collection_component_2, "donate_mint", |lookup| {
+                (lookup.bucket("donation_amount_2"),)
+            })
+            .assert_worktop_contains(base.membership_resource_address, dec!(2))
+            .take_all_from_worktop(base.membership_resource_address, "memberships")
+            .call_method_with_name_lookup(
+                base.repository_component,
+                "merge_memberships",
+                |lookup| (lookup.bucket("memberships"),),
+            )
+            .assert_worktop_contains(base.membership_resource_address, dec!(1))
+            .assert_worktop_contains(base.thanks_token_resource_address, dec!(500))
+            .deposit_batch(donation_account.wallet_address);
+
+        let receipt = execute_manifest(
+            &mut base.test_runner,
+            manifest,
+            "merge_memberships_failure_different_creator_2",
             vec![NonFungibleGlobalId::from_public_key(
                 &donation_account.public_key,
             )],

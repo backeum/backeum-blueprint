@@ -1,0 +1,50 @@
+CALL_METHOD
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    "withdraw"
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("500")
+;
+TAKE_FROM_WORKTOP
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("500")
+    Bucket("donation_amount_1")
+;
+CALL_METHOD
+    Address("component_sim1cpzy02fdrzklwy5l3wgwr9ndn5j0jpu7xwnsuwt3dqnh677ufdgh0j")
+    "donate_mint"
+    Bucket("donation_amount_1")
+;
+CALL_METHOD
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    "withdraw_non_fungibles"
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("{d05e9ab1ee6e5937-a10d2c304dadd0a8-bba362441aae60d0-6b2d91b9a96d67aa}")
+    )
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Decimal("2")
+;
+TAKE_ALL_FROM_WORKTOP
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Bucket("memberships")
+;
+CALL_METHOD
+    Address("component_sim1cpxlsuvrse3535t23tv3elwhvq0v7ng5jqrjaj48h7nn69ja0f25lr")
+    "merge_memberships"
+    Bucket("memberships")
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1ngyaesxqjsc9kkcecm92msyv2h4940pwpfup8elcn0xc4s2falx2lr")
+    Decimal("1")
+;
+ASSERT_WORKTOP_CONTAINS
+    Address("resource_sim1t4xh27qdnm8g5489vrpe298h0hr5tf59ncj056p888amskczv3wag3")
+    Decimal("500")
+;
+CALL_METHOD
+    Address("account_sim1c98ak9qyez7mpmh8c0fsnct57w9lyrtmd2qa8heg2wdhnr875c4tau")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP")
+;

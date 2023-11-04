@@ -1,12 +1,13 @@
 use crate::collection::collection::Collection;
-use crate::data::{Creator, Membership, Trophy};
+use crate::data::{Creator, Membership, Transaction, Trophy};
 use crate::util::*;
 use scrypto::prelude::*;
 
 #[blueprint]
-#[types(Trophy, Membership, Creator)]
+#[types(Trophy, Membership, Creator, Transaction)]
 mod repository {
     use crate::collection::CollectionArg;
+    use std::cmp::Ordering;
     enable_package_royalties! {
         new => Free;
         merge_trophies => Free;
@@ -505,44 +506,40 @@ mod repository {
                 UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap();
 
             let mut donated = dec!(0);
+            let mut transactions: Vec<Transaction> = vec![];
             for trophy_data in trophies_list.iter() {
+                let data = trophy_data.data();
                 assert_eq!(
-                    trophy_data.data().collection_id,
-                    template.collection_id,
+                    data.collection_id, template.collection_id,
                     "The given trophies is not the of the same collection id."
                 );
 
                 assert_eq!(
-                    trophy_data.data().info_url,
-                    template.info_url,
+                    data.info_url, template.info_url,
                     "The given trophies is not the of the same info url."
                 );
 
                 assert_eq!(
-                    trophy_data.data().name,
-                    template.name,
+                    data.name, template.name,
                     "The given trophies is not the of the same name."
                 );
 
-                assert_eq!(
-                    trophy_data.data().creator,
-                    template.creator,
-                    "The given trophies is not the of the same creator id."
+                assert!(
+                    data.creator.eq(&template.creator),
+                    "The given trophies does not have the same creator id."
                 );
 
                 assert_eq!(
-                    trophy_data.data().creator_name,
-                    template.creator_name,
+                    data.creator_name, template.creator_name,
                     "The given trophies is not the of the same creator name."
                 );
 
                 assert_eq!(
-                    trophy_data.data().creator_slug,
-                    template.creator_slug,
+                    data.creator_slug, template.creator_slug,
                     "The given trophies is not the of the same creator slug."
                 );
 
-                let trophy_date = parse_created_string(trophy_data.data().created);
+                let trophy_date = parse_created_string(data.created);
 
                 if trophy_date
                     .to_instant()
@@ -551,8 +548,23 @@ mod repository {
                     earliest_created = trophy_date;
                 }
 
-                donated += trophy_data.data().donated;
+                transactions.extend(data.transactions.clone());
+                donated += data.donated;
             }
+
+            // Sort the transactions by created date.
+            transactions.sort_by(|a, b| {
+                let a_date = parse_created_string(a.created.clone());
+                let b_date = parse_created_string(b.created.clone());
+                if a_date
+                    .to_instant()
+                    .compare(b_date.to_instant(), TimeComparisonOperator::Lt)
+                {
+                    ()
+                }
+
+                Ordering::Less
+            });
 
             // Get the domain name used from the trophy resource manager.
             let domain: String = self
@@ -571,6 +583,7 @@ mod repository {
                 info_url: template.info_url,
                 collection_id: template.collection_id.clone(),
                 created: created.clone(),
+                transactions,
                 donated,
                 key_image_url: UncheckedUrl::of(generate_trophy_url(
                     domain.to_string(),
@@ -603,44 +616,35 @@ mod repository {
                 UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap();
 
             let mut donated = dec!(0);
+            let mut transactions: Vec<Transaction> = vec![];
             for membership_data in membership_list.iter() {
+                let data = membership_data.data();
                 assert_eq!(
-                    membership_data.data().creator,
-                    template.creator,
-                    "The given memberships is not the of the same collection id."
-                );
-
-                assert_eq!(
-                    membership_data.data().info_url,
-                    template.info_url,
+                    data.info_url, template.info_url,
                     "The given memberships is not the of the same created date."
                 );
 
                 assert_eq!(
-                    membership_data.data().name,
-                    template.name,
+                    data.name, template.name,
                     "The given memberships is not the of the same name."
                 );
 
-                assert_eq!(
-                    membership_data.data().creator,
-                    template.creator,
-                    "The given memberships is not the of the same creator id."
+                assert!(
+                    data.creator.eq(&template.creator),
+                    "The given memberships does not have the same creator id."
                 );
 
                 assert_eq!(
-                    membership_data.data().creator_name,
-                    template.creator_name,
+                    data.creator_name, template.creator_name,
                     "The given memberships is not the of the same creator name."
                 );
 
                 assert_eq!(
-                    membership_data.data().creator_slug,
-                    template.creator_slug,
+                    data.creator_slug, template.creator_slug,
                     "The given memberships is not the of the same creator slug."
                 );
 
-                let membership_date = parse_created_string(membership_data.data().created);
+                let membership_date = parse_created_string(data.created);
 
                 if membership_date
                     .to_instant()
@@ -649,8 +653,23 @@ mod repository {
                     earliest_created = membership_date;
                 }
 
-                donated += membership_data.data().donated;
+                transactions.extend(data.transactions.clone());
+                donated += data.donated;
             }
+
+            // Sort the transactions by created date.
+            transactions.sort_by(|a, b| {
+                let a_date = parse_created_string(a.created.clone());
+                let b_date = parse_created_string(b.created.clone());
+                if a_date
+                    .to_instant()
+                    .compare(b_date.to_instant(), TimeComparisonOperator::Lt)
+                {
+                    ()
+                }
+
+                Ordering::Less
+            });
 
             // Get the domain name used from the trophy resource manager.
             let domain: String = self
@@ -668,6 +687,7 @@ mod repository {
                 creator_slug: template.creator_slug.clone(),
                 created: created.clone(),
                 info_url: template.info_url,
+                transactions,
                 donated,
                 key_image_url: UncheckedUrl::of(generate_membership_url(
                     domain.to_string(),

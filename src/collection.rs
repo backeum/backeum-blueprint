@@ -1,4 +1,4 @@
-use crate::data::{Creator, Membership, Trophy};
+use crate::data::{Creator, Membership, Transaction, Trophy};
 use crate::util::*;
 use scrypto::prelude::*;
 
@@ -20,7 +20,7 @@ pub struct CollectionArg {
 }
 
 #[blueprint]
-#[types(Trophy, Membership, Creator)]
+#[types(Trophy, Membership, Creator, Transaction)]
 mod collection {
     enable_method_auth! {
         roles {
@@ -182,15 +182,20 @@ mod collection {
                 UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap(),
             );
 
+            let transaction = Transaction {
+                amount: donated,
+                created: created.clone(),
+            };
+
             let data = Membership {
                 name: format!("Membership: {}", self.creator_name),
                 description: format!("Digital emblem celebrating {}'s crowdfunding journey. It evolves with cumulative donations. It's a symbol of encouragement, encapsulating the artist-backer bond in the digital age.", self.creator_name).to_string(),
-
                 creator: self.creator_badge_global_id.clone(),
                 creator_name: self.creator_name.clone(),
                 creator_slug: self.creator_slug.clone(),
                 info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.creator_slug)),
                 created: created.clone(),
+                transactions: vec![transaction],
                 donated,
                 key_image_url: UncheckedUrl::of(generate_membership_url(
                     domain.to_string(),
@@ -224,12 +229,19 @@ mod collection {
                 "The given membership does not match this component."
             );
 
-            assert_eq!(
-                data.creator, self.creator_badge_global_id,
+            assert!(
+                data.creator.eq(&self.creator_badge_global_id),
                 "The given membership does not match this component."
             );
 
+            let created = generate_created_string(
+                UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap(),
+            );
+
+            let transaction = Transaction { amount, created };
+
             // Generate new data based on the updated donation value.
+            data.transactions.push(transaction);
             data.donated += amount;
             data.key_image_url = UncheckedUrl::of(generate_membership_url(
                 domain.to_string(),
@@ -239,6 +251,11 @@ mod collection {
             ));
 
             // Update NF with new data
+            self.membership_resource_manager.update_non_fungible_data(
+                &nft_id,
+                "transactions",
+                data.transactions,
+            );
             self.membership_resource_manager.update_non_fungible_data(
                 &nft_id,
                 "donated",
@@ -263,6 +280,11 @@ mod collection {
                 UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap(),
             );
 
+            let transaction = Transaction {
+                amount,
+                created: created.clone(),
+            };
+
             // Create the trophy data.
             let data = Trophy {
                 name: self.trophy_name.clone(),
@@ -273,6 +295,7 @@ mod collection {
                 info_url: UncheckedUrl::of(format!("{}/p/{}", domain, self.creator_slug)),
                 collection_id: self.collection_id.clone(),
                 created: created.clone(),
+                transactions: vec![transaction],
                 donated: amount,
                 key_image_url: UncheckedUrl::of(generate_trophy_url(
                     domain.to_string(),
@@ -306,7 +329,19 @@ mod collection {
                 "The given trophy does match the collection id of this component."
             );
 
+            assert!(
+                data.creator.eq(&self.creator_badge_global_id),
+                "The given membership does not match this component."
+            );
+
+            let created = generate_created_string(
+                UtcDateTime::from_instant(&Clock::current_time_rounded_to_minutes()).unwrap(),
+            );
+
+            let transaction = Transaction { amount, created };
+
             // Generate new data based on the updated donation value.
+            data.transactions.push(transaction);
             data.donated += amount;
             data.key_image_url = UncheckedUrl::of(generate_trophy_url(
                 domain.to_string(),
@@ -316,6 +351,11 @@ mod collection {
             ));
 
             // Update NF with new data
+            self.trophy_resource_manager.update_non_fungible_data(
+                &nft_id,
+                "transactions",
+                data.transactions,
+            );
             self.trophy_resource_manager
                 .update_non_fungible_data(&nft_id, "donated", data.donated);
             self.trophy_resource_manager.update_non_fungible_data(

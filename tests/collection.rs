@@ -28,7 +28,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
                 creator_badge_account.wallet_address,
-                creator_badge_badge_id,
+                creator_badge_badge_id.clone(),
             )
             .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
@@ -124,17 +124,24 @@ mod tests {
         assert_eq!(trophy_data.description, "Kansulers trophy");
         assert_eq!(trophy_data.creator_slug, "kansuler");
         assert_eq!(trophy_data.creator_name, "Kansuler");
+        assert_eq!(trophy_data.creator, creator_badge_badge_id);
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(trophy_data.created, "1970-01-01");
+        assert_eq!(trophy_data.created, "2023-11-04");
         assert_eq!(trophy_data.donated, dec!(150));
+
+        assert_eq!(trophy_data.transactions.len(), 1);
+        trophy_data.transactions.iter().for_each(|transaction| {
+            assert_eq!(transaction.amount, dec!(150));
+            assert_eq!(transaction.created, "2023-11-04");
+        });
 
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=150&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=150&created=2023-11-04",
                 trophy_data.collection_id
             ))
         );
@@ -164,13 +171,19 @@ mod tests {
             membership_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(membership_data.created, "1970-01-01");
+        assert_eq!(membership_data.created, "2023-11-04");
         assert_eq!(membership_data.donated, dec!(150));
+        assert_eq!(membership_data.creator, creator_badge_badge_id,);
+        assert_eq!(membership_data.transactions.len(), 1);
+        membership_data.transactions.iter().for_each(|transaction| {
+            assert_eq!(transaction.amount, dec!(150));
+            assert_eq!(transaction.created, "2023-11-04");
+        });
 
         assert_eq!(
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/membership/{}?donated=150&created=1970-01-01",
+                "https://localhost:8080/nft/membership/{}?donated=150&created=2023-11-04",
                 membership_data.creator_slug
             ))
         );
@@ -194,7 +207,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
                 creator_badge_account.wallet_address,
-                creator_badge_badge_id,
+                creator_badge_badge_id.clone(),
             )
             .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
@@ -353,17 +366,23 @@ mod tests {
         assert_eq!(trophy_data.description, "Kansulers trophy");
         assert_eq!(trophy_data.creator_slug, "kansuler");
         assert_eq!(trophy_data.creator_name, "Kansuler");
+        assert_eq!(trophy_data.creator, creator_badge_badge_id);
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(trophy_data.created, "1970-01-01");
+        assert_eq!(trophy_data.created, "2023-11-04");
         assert_eq!(trophy_data.donated, dec!(150));
 
+        assert_eq!(trophy_data.transactions.len(), 1);
+        trophy_data.transactions.iter().for_each(|transaction| {
+            assert_eq!(transaction.amount, dec!(150));
+            assert_eq!(transaction.created, "2023-11-04");
+        });
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=150&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=150&created=2023-11-04",
                 trophy_data.collection_id
             ))
         );
@@ -393,13 +412,19 @@ mod tests {
             membership_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(membership_data.created, "1970-01-01");
+        assert_eq!(membership_data.created, "2023-11-04");
         assert_eq!(membership_data.donated, dec!(300));
+        assert_eq!(membership_data.creator, creator_badge_badge_id);
+        assert_eq!(membership_data.transactions.len(), 2);
+        membership_data.transactions.iter().for_each(|transaction| {
+            assert_eq!(transaction.amount, dec!(150));
+            assert_eq!(transaction.created, "2023-11-04");
+        });
 
         assert_eq!(
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/membership/{}?donated=300&created=1970-01-01",
+                "https://localhost:8080/nft/membership/{}?donated=300&created=2023-11-04",
                 membership_data.creator_slug
             ))
         );
@@ -527,7 +552,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
                 creator_badge_account.wallet_address,
-                creator_badge_badge_id,
+                creator_badge_badge_id.clone(),
             )
             .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
@@ -655,17 +680,18 @@ mod tests {
         assert_eq!(trophy_data.description, "Kansulers trophy");
         assert_eq!(trophy_data.creator_slug, "kansuler");
         assert_eq!(trophy_data.creator_name, "Kansuler");
+        assert_eq!(trophy_data.creator, creator_badge_badge_id);
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(trophy_data.created, "1970-01-01");
+        assert_eq!(trophy_data.created, "2023-11-04");
         assert_eq!(trophy_data.donated, dec!(300));
 
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=300&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=300&created=2023-11-04",
                 trophy_data.collection_id
             ))
         );
@@ -689,7 +715,7 @@ mod tests {
         let manifest = ManifestBuilder::new()
             .create_proof_from_account_of_non_fungible(
                 creator_badge_account.wallet_address,
-                creator_badge_badge_id,
+                creator_badge_badge_id.clone(),
             )
             .pop_from_auth_zone("creator_badge_proof")
             .call_method_with_name_lookup(
@@ -836,17 +862,18 @@ mod tests {
         assert_eq!(trophy_data.description, "Kansulers trophy");
         assert_eq!(trophy_data.creator_slug, "kansuler");
         assert_eq!(trophy_data.creator_name, "Kansuler");
+        assert_eq!(trophy_data.creator, creator_badge_badge_id);
         assert_eq!(
             trophy_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(trophy_data.created, "1970-01-01");
+        assert_eq!(trophy_data.created, "2023-11-04");
         assert_eq!(trophy_data.donated, dec!(300));
 
         assert_eq!(
             trophy_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/collection/{}?donated=300&created=1970-01-01",
+                "https://localhost:8080/nft/collection/{}?donated=300&created=2023-11-04",
                 trophy_data.collection_id
             ))
         );
@@ -860,13 +887,14 @@ mod tests {
             membership_data.info_url,
             UncheckedUrl::of("https://localhost:8080/p/kansuler".to_owned())
         );
-        assert_eq!(membership_data.created, "1970-01-01");
+        assert_eq!(membership_data.created, "2023-11-04");
         assert_eq!(membership_data.donated, dec!(300));
+        assert_eq!(membership_data.creator, creator_badge_badge_id);
 
         assert_eq!(
             membership_data.key_image_url,
             UncheckedUrl::of(format!(
-                "https://localhost:8080/nft/membership/{}?donated=300&created=1970-01-01",
+                "https://localhost:8080/nft/membership/{}?donated=300&created=2023-11-04",
                 membership_data.creator_slug
             ))
         );

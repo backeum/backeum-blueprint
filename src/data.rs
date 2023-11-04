@@ -1,6 +1,12 @@
 use scrypto::prelude::*;
 
 #[derive(ScryptoSbor, NonFungibleData, Clone)]
+pub struct Transaction {
+    pub amount: Decimal,
+    pub created: String,
+}
+
+#[derive(ScryptoSbor, NonFungibleData, Clone)]
 pub struct Trophy {
     pub name: String,
     pub description: String,
@@ -12,7 +18,11 @@ pub struct Trophy {
     pub created: String,
 
     #[mutable]
+    pub transactions: Vec<Transaction>,
+
+    #[mutable]
     pub donated: Decimal,
+
     #[mutable]
     pub key_image_url: UncheckedUrl,
 }
@@ -26,6 +36,9 @@ pub struct Membership {
     pub creator_slug: String,
     pub info_url: UncheckedUrl,
     pub created: String,
+
+    #[mutable]
+    pub transactions: Vec<Transaction>,
 
     #[mutable]
     pub donated: Decimal,

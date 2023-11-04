@@ -1,9 +1,9 @@
 CALL_METHOD
-    Address("account_sim1c823x5wavt6cv28slsdcd6wkn78n0nkghehzq6ztu4msae5huwms62")
+    Address("account_sim1cy4dyrpdtf2pe76kyxqmpfkke5mffm92hhxmfy68va4sufusy8wvhv")
     "create_proof_of_non_fungibles"
     Address("resource_sim1ngxg6dx52hyx4u3gatzt38efkx98q4mwklj70a9s7ympxjacfsa74z")
     Array<NonFungibleLocalId>(
-        NonFungibleLocalId("{5bbf7ed683eeabc2-c6dfcd0800a833bb-240fe6bf0e5b2b38-c7e92e5850463c9e}")
+        NonFungibleLocalId("{88187e7fec84a59c-9713f20d4bdd245a-90c9c04347db595f-07a038d384ce12a4}")
     )
 ;
 POP_FROM_AUTH_ZONE
