@@ -560,10 +560,10 @@ mod repository {
                     .to_instant()
                     .compare(b_date.to_instant(), TimeComparisonOperator::Lt)
                 {
-                    ()
+                    return Ordering::Less;
                 }
 
-                Ordering::Less
+                Ordering::Greater
             });
 
             // Get the domain name used from the trophy resource manager.
@@ -665,10 +665,10 @@ mod repository {
                     .to_instant()
                     .compare(b_date.to_instant(), TimeComparisonOperator::Lt)
                 {
-                    ()
+                    return Ordering::Less;
                 }
 
-                Ordering::Less
+                Ordering::Greater
             });
 
             // Get the domain name used from the trophy resource manager.
